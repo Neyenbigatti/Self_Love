@@ -24,31 +24,52 @@ export function StatsCard({
   return (
     <div
       className={cn(
-        'rounded-xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md',
-        className
+        // Shell — canonical card surface
+        'card-shell group flex flex-col gap-4 rounded-xl border border-border bg-card p-5',
+        className,
       )}
     >
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-semibold text-foreground">{value}</p>
-          {description && (
-            <p className="text-xs text-muted-foreground">{description}</p>
+      {/* Header row: label + icon */}
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {title}
+        </p>
+
+        {/* Icon badge */}
+        <span
+          className={cn(
+            'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
+            'bg-accent/10 text-accent',
+            'transition-colors duration-150 group-hover:bg-accent/15',
           )}
-          {trend && (
-            <p
-              className={cn(
-                'text-xs font-medium',
-                trend.isPositive ? 'text-green-600' : 'text-red-600'
-              )}
-            >
-              {trend.isPositive ? '+' : '-'}{Math.abs(trend.value)}% from last week
-            </p>
-          )}
-        </div>
-        <div className="rounded-lg bg-accent/10 p-3">
-          <Icon className="h-5 w-5 text-accent" />
-        </div>
+        >
+          <Icon style={{ width: '1rem', height: '1rem' }} />
+        </span>
+      </div>
+
+      {/* Value */}
+      <p className="text-[2rem] font-bold leading-none tabular-nums text-foreground">
+        {value}
+      </p>
+
+      {/* Footer: trend + description */}
+      <div className="flex items-center gap-2">
+        {trend && (
+          <span
+            className={cn(
+              'inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5',
+              'text-[0.6875rem] font-semibold leading-none tabular-nums',
+              trend.isPositive
+                ? 'bg-emerald-50 text-emerald-700'
+                : 'bg-red-50 text-red-600',
+            )}
+          >
+            {trend.isPositive ? '↑' : '↓'}&thinsp;{Math.abs(trend.value)}%
+          </span>
+        )}
+        {description && (
+          <p className="truncate text-xs text-muted-foreground">{description}</p>
+        )}
       </div>
     </div>
   )

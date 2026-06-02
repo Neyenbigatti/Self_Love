@@ -4,7 +4,6 @@ import { AppointmentsTable } from '@/components/dashboard/appointments-table'
 import { WeeklySchedule } from '@/components/dashboard/weekly-schedule'
 import { RecentPatients } from '@/components/dashboard/recent-patients'
 
-// Mock data
 const statsData = [
   {
     title: 'Appointments Today',
@@ -174,15 +173,20 @@ const weeklySchedule = [
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Page Header */}
-      <div>
-        <h1 className="font-serif text-2xl font-semibold text-foreground lg:text-3xl">
-          Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Welcome back, Dr. Martinez. Here&apos;s your overview for today.
-        </p>
+      <div className="flex items-end justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-accent mb-1">
+            Overview
+          </p>
+          <h1 className="font-serif text-2xl font-semibold text-foreground lg:text-3xl leading-tight">
+            Dashboard
+          </h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Welcome back, Dra. Uncal. Here&apos;s your overview for today.
+          </p>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -194,7 +198,7 @@ export default function DashboardPage() {
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Appointments - Takes 2 columns */}
+        {/* Appointments — 2 columns */}
         <div className="space-y-6 lg:col-span-2">
           <AppointmentsTable
             title="Upcoming Appointments"

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -10,37 +9,21 @@ import {
   Calendar,
   Users,
   Settings,
-  ChevronLeft,
-  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
-const navItems = [
-  {
-    label: 'Clinical History',
-    href: '/dashboard/clinical-history',
-    icon: ClipboardList,
-  },
-  {
-    label: 'Physical Exploration',
-    href: '/dashboard/physical-exploration',
-    icon: Stethoscope,
-  },
-  {
-    label: 'Calendar',
-    href: '/dashboard/calendar',
-    icon: Calendar,
-  },
-  {
-    label: 'Patients',
-    href: '/dashboard/patients',
-    icon: Users,
-  },
-  {
-    label: 'Settings',
-    href: '/dashboard/settings',
-    icon: Settings,
-  },
+// ─── Nav structure ────────────────────────────────────────────────────────────
+// Settings is visually separated at the bottom; clinical items sit above.
+const primaryNav = [
+  { label: 'Calendar',             href: '/dashboard/calendar',              icon: Calendar     },
+  { label: 'Patients',             href: '/dashboard/patients',              icon: Users        },
+  { label: 'Clinical History',     href: '/dashboard/clinical-history',      icon: ClipboardList },
+  { label: 'Physical Exploration', href: '/dashboard/physical-exploration',  icon: Stethoscope  },
+]
+
+const secondaryNav = [
+  { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ]
 
 interface SidebarProps {
@@ -48,70 +31,199 @@ interface SidebarProps {
   onCollapsedChange?: (collapsed: boolean) => void
 }
 
+// ─── NavItem ─────────────────────────────────────────────────────────────────
+function NavItem({
+  href,
+  icon: Icon,
+  label,
+  isActive,
+  collapsed,
+}: {
+  href: string
+  icon: React.ElementType
+  label: string
+  isActive: boolean
+  collapsed: boolean
+}) {
+  return (
+    <Link
+      href={href}
+      title={collapsed ? label : undefined}
+      className={cn(
+        // Base
+        'group relative flex items-center gap-3 rounded-lg text-sm font-medium',
+        'transition-colors duration-150 outline-none',
+        'focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1',
+        // Collapsed vs expanded padding
+        collapsed ? 'justify-center px-0 py-2.5 mx-1' : 'px-3 py-2.5',
+        // State
+        isActive
+          ? [
+              'text-accent-foreground',
+              // Left accent bar via before pseudo using box-shadow trick with ring
+              'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2',
+              'before:h-[60%] before:w-0.5 before:rounded-full before:bg-accent',
+              collapsed ? 'before:hidden' : '',
+              // Background: subtle tinted fill, not full accent
+              'bg-accent/10',
+            ]
+          : [
+              'text-muted-foreground',
+              'hover:text-foreground hover:bg-secondary/70',
+            ],
+      )}
+    >
+      {/* Icon — fixed size via inline style to avoid Tailwind JIT miss on h-4.5 */}
+      <Icon
+        style={{ width: '1.0625rem', height: '1.0625rem' }}
+        className={cn(
+          'shrink-0 transition-transform duration-200',
+          isActive ? 'text-accent' : 'group-hover:scale-105',
+        )}
+      />
+
+      {/* Label — clips cleanly when collapsing */}
+      {!collapsed && (
+        <span
+          className={cn(
+            'truncate leading-none tracking-[-0.01em]',
+            isActive && 'font-semibold text-foreground',
+          )}
+        >
+          {label}
+        </span>
+      )}
+
+      {/* Active dot for collapsed state */}
+      {collapsed && isActive && (
+        <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-accent" />
+      )}
+    </Link>
+  )
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
 export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) {
   const pathname = usePathname()
+
+  const isActive = (href: string) =>
+    pathname === href || pathname?.startsWith(href + '/')
 
   return (
     <aside
       className={cn(
-        'flex h-full flex-col border-r border-border bg-card transition-all duration-300',
-        collapsed ? 'w-16' : 'w-64'
+        // Layout
+        'flex h-full flex-col',
+        // Visual
+        'border-r border-border bg-card',
+        // Width transition — overflow:hidden prevents label bleed during animation
+        'overflow-hidden transition-[width] duration-300 ease-in-out',
+        collapsed ? 'w-[3.75rem]' : 'w-60',
       )}
     >
-      {/* Logo */}
-      <div className="flex h-16 items-center border-b border-border px-4">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <span className="font-serif text-lg font-semibold text-primary-foreground">A</span>
-          </div>
+      {/* ── Logo ──────────────────────────────────────────────────────────── */}
+      <div
+        className={cn(
+          'flex h-14 shrink-0 items-center border-b border-border',
+          collapsed ? 'justify-center px-0' : 'gap-3 px-4',
+        )}
+      >
+        <Link
+          href="/dashboard"
+          className={cn(
+            'flex items-center gap-2.5 rounded-lg outline-none',
+            'focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1',
+          )}
+          title={collapsed ? 'SelfLove' : undefined}
+        >
+          {/* Wordmark icon */}
+          <span
+            className={cn(
+              'flex shrink-0 items-center justify-center rounded-lg',
+              'bg-accent text-accent-foreground',
+              'shadow-sm shadow-accent/30',
+              'font-serif text-sm font-bold leading-none',
+              'h-8 w-8',
+            )}
+          >
+            SL
+          </span>
+
           {!collapsed && (
-            <span className="font-serif text-xl font-semibold text-foreground">
+            <span className="whitespace-nowrap font-serif text-[1.0625rem] font-semibold leading-none tracking-[-0.02em] text-foreground">
               SelfLove
             </span>
           )}
         </Link>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-3">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-accent/10 text-accent'
-                  : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-                collapsed && 'justify-center px-2'
-              )}
-            >
-              <item.icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          )
-        })}
+      {/* ── Primary Nav ───────────────────────────────────────────────────── */}
+      <nav
+        className={cn(
+          'flex flex-1 flex-col gap-0.5 overflow-y-auto overflow-x-hidden py-3',
+          collapsed ? 'px-0' : 'px-2',
+        )}
+        aria-label="Main navigation"
+      >
+        {primaryNav.map((item) => (
+          <NavItem
+            key={item.href}
+            {...item}
+            isActive={isActive(item.href)}
+            collapsed={collapsed}
+          />
+        ))}
       </nav>
 
-      {/* Collapse Button */}
-      <div className="border-t border-border p-3">
-        <Button
-          variant="ghost"
-          size="sm"
+      {/* ── Divider ───────────────────────────────────────────────────────── */}
+      <div className="mx-3 border-t border-border/60" />
+
+      {/* ── Secondary Nav (Settings) ──────────────────────────────────────── */}
+      <div
+        className={cn(
+          'flex flex-col gap-0.5 py-3',
+          collapsed ? 'px-0' : 'px-2',
+        )}
+      >
+        {secondaryNav.map((item) => (
+          <NavItem
+            key={item.href}
+            {...item}
+            isActive={isActive(item.href)}
+            collapsed={collapsed}
+          />
+        ))}
+      </div>
+
+      {/* ── Collapse Toggle ───────────────────────────────────────────────── */}
+      <div className="shrink-0 border-t border-border">
+        <button
+          type="button"
           onClick={() => onCollapsedChange?.(!collapsed)}
-          className={cn('w-full', collapsed ? 'justify-center px-2' : 'justify-start')}
+          className={cn(
+            'flex w-full items-center gap-2.5 py-3 text-xs text-muted-foreground',
+            'transition-colors duration-150 hover:text-foreground',
+            'outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset',
+            collapsed ? 'justify-center px-0' : 'px-4',
+          )}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
+            <PanelLeftOpen
+              style={{ width: '0.9375rem', height: '0.9375rem' }}
+              className="shrink-0"
+            />
           ) : (
             <>
-              <ChevronLeft className="h-4 w-4" />
-              <span className="ml-2">Collapse</span>
+              <PanelLeftClose
+                style={{ width: '0.9375rem', height: '0.9375rem' }}
+                className="shrink-0"
+              />
+              <span className="font-medium tracking-[-0.01em]">Collapse</span>
             </>
           )}
-        </Button>
+        </button>
       </div>
     </aside>
   )

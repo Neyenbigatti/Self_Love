@@ -1,17 +1,19 @@
 "use client"
- 
+  
 import { useState } from "react"
+import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
- 
+  
 interface RegisterFormProps {
   userType: "patient" | "professional"
   onUserTypeChange: (type: "patient" | "professional") => void
   onSwitchToLogin: () => void
 }
- 
+  
 interface FormErrors {
   fullName?: string
   professionalTitle?: string
@@ -20,7 +22,7 @@ interface FormErrors {
   password?: string
   phone?: string
 }
- 
+  
 const userTypeOptions = [
   {
     value: "patient" as const,
@@ -82,6 +84,8 @@ function Field({
 }
  
 export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: RegisterFormProps) {
+  const { register } = useAuth()
+  const router = useRouter()
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -93,6 +97,7 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [apiError, setApiError] = useState<string | null>(null)
  
   const validate = (): FormErrors => {
     const errs: FormErrors = {}
@@ -130,20 +135,41 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setApiError(null)
     const allFields = ["fullName", "email", "password", ...(userType === "professional" ? ["professionalTitle", "clinicName"] : [])]
     setTouched(Object.fromEntries(allFields.map((f) => [f, true])))
     const errs = validate()
     setErrors(errs)
     if (Object.keys(errs).length > 0) return
- 
+  
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    alert(`Account created successfully as ${userType}! (Mock authentication)`)
-    setIsLoading(false)
+    try {
+      const user = await register({
+        name: formData.fullName.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+        phone: formData.phone.trim() || undefined,
+        role: userType,
+        title: formData.professionalTitle.trim() || undefined,
+        clinicName: formData.clinicName.trim() || undefined,
+      })
+      router.push(user.role === 'professional' ? '/dashboard' : '/patient')
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : 'Registration failed')
+    } finally {
+      setIsLoading(false)
+    }
   }
  
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+      {/* API Error */}
+      {apiError && (
+        <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive" role="alert">
+          {apiError}
+        </div>
+      )}
+
       {/* User type selector */}
       <fieldset>
         <legend className="text-sm font-medium text-foreground mb-2">I am registering as a</legend>

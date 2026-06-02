@@ -1,29 +1,34 @@
 "use client"
- 
+  
 import { useState } from "react"
+import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
- 
+  
 interface LoginFormProps {
   onSwitchToRegister: () => void
 }
- 
+  
 interface FormErrors {
   email?: string
   password?: string
 }
- 
+  
 export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
+  const { login } = useAuth()
+  const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
- 
+  const [apiError, setApiError] = useState<string | null>(null)
+  
   const validate = (): FormErrors => {
     const errs: FormErrors = {}
     if (!email) errs.email = "Email is required"
@@ -32,24 +37,29 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     else if (password.length < 6) errs.password = "Password must be at least 6 characters"
     return errs
   }
- 
+  
   const handleBlur = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }))
     setErrors(validate())
   }
- 
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setApiError(null)
     setTouched({ email: true, password: true })
     const errs = validate()
     setErrors(errs)
     if (Object.keys(errs).length > 0) return
- 
+  
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    console.log("[v0] Mock login:", { email, rememberMe })
-    alert("Login successful! (Mock authentication)")
-    setIsLoading(false)
+    try {
+      const user = await login(email, password)
+      router.push(user.role === 'professional' ? '/dashboard' : '/patient')
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : 'Login failed')
+    } finally {
+      setIsLoading(false)
+    }
   }
  
   const fieldError = (field: keyof FormErrors) =>
@@ -57,6 +67,13 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
  
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+      {/* API Error */}
+      {apiError && (
+        <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive" role="alert">
+          {apiError}
+        </div>
+      )}
+
       {/* Email */}
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="email" className="text-sm font-medium text-foreground">

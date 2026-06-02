@@ -1,24 +1,42 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/lib/auth-context'
+import { useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/dashboard/sidebar'
 import { Header } from '@/components/dashboard/header'
 import { cn } from '@/lib/utils'
-
-// Mock professional data
-const professional = {
-  name: 'Dra. Lucía Belén Uncal',
-  title: 'Técnica Costetóloga',
-  avatar: undefined,
-}
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { user, isLoading } = useAuth()
+  const router = useRouter()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Redirect non-professional users away
+  useEffect(() => {
+    if (!isLoading && (!user || user.role !== 'professional')) {
+      router.replace('/')
+    }
+  }, [user, isLoading, router])
+
+  if (isLoading || !user || user.role !== 'professional') {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground text-sm">Loading...</div>
+      </div>
+    )
+  }
+
+  const professional = {
+    name: user.name,
+    title: user.title || 'Professional',
+    avatar: user.avatar || undefined,
+  }
 
   return (
     <div className="flex h-screen bg-background">

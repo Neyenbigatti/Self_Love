@@ -1,6 +1,33 @@
+'use client'
+
+import { useEffect } from 'react'
+import { useAuth } from '@/lib/auth-context'
+import { useRouter } from 'next/navigation'
 import { AuthCard } from "@/components/auth/auth-card"
 
 export default function AuthPage() {
+  const { user, isLoading } = useAuth()
+  const router = useRouter()
+
+  // Redirect authenticated professionals to dashboard
+  useEffect(() => {
+    if (!isLoading && user?.role === 'professional') {
+      router.replace('/dashboard')
+    }
+  }, [user, isLoading, router])
+
+  // Show loading while checking session (avoids flash)
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="animate-pulse text-muted-foreground text-sm">Loading...</div>
+      </main>
+    )
+  }
+
+  // If user is loaded and is professional, will redirect via useEffect
+  if (user) return null
+
   return (
     <main className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6 lg:p-8">
       {/* Background Pattern */}

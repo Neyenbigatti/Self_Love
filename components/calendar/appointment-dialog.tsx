@@ -198,7 +198,6 @@ export function AppointmentDialog({
                   mode="single"
                   selected={date}
                   onSelect={(d) => d && setDate(d)}
-                  initialFocus
                 />
               </PopoverContent>
             </Popover>
@@ -245,7 +244,7 @@ export function AppointmentDialog({
           {isEditing && (
             <div className="grid gap-2">
               <Label htmlFor="status">Status</Label>
-              <Select value={status} onValueChange={setStatus}>
+              <Select value={status} onValueChange={(v) => setStatus(v as Appointment['status'])}>
                 <SelectTrigger id="status">
                   <SelectValue />
                 </SelectTrigger>

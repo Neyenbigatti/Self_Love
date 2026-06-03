@@ -424,7 +424,7 @@ async function seed() {
           id: randomUUID(),
           explorationId,
           url: `/placeholder/explorations/${photo.originalName}`,
-          angle: photo.angle,
+          angle: photo.angle as 'front' | 'left' | 'right' | 'up' | 'down',
           originalName: photo.originalName ?? null,
           mimeType: photo.mimeType ?? null,
           fileSize: photo.fileSize ?? null,

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { parseISO } from 'date-fns'
 import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { AppointmentCard } from '@/components/patient-portal/appointment-card'
 import type { Appointment } from '@/lib/types'
 
@@ -37,6 +38,30 @@ export default function PatientDashboardPage() {
   useEffect(() => {
     loadAppointments()
   }, [])
+
+  const handleCancelAppointment = async (id: string) => {
+    try {
+      const res = await fetch(`/api/appointments/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'cancelled' }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Failed to cancel appointment')
+      }
+
+      setAppointments((prev) =>
+        prev.map((apt) =>
+          apt.id === id ? { ...apt, status: 'cancelled' as const } : apt,
+        ),
+      )
+      toast.success('Appointment cancelled')
+    } catch (err) {
+      console.error('Failed to cancel appointment:', err)
+      toast.error(err instanceof Error ? err.message : 'Failed to cancel appointment')
+    }
+  }
 
   const now = new Date()
   const upcoming = appointments.filter(
@@ -105,7 +130,7 @@ export default function PatientDashboardPage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {upcoming.map((apt) => (
-              <AppointmentCard key={apt.id} appointment={apt} variant="upcoming" />
+              <AppointmentCard key={apt.id} appointment={apt} variant="upcoming" onCancel={handleCancelAppointment} />
             ))}
           </div>
         )}

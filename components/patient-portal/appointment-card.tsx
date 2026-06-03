@@ -1,10 +1,21 @@
 "use client";
 
 import { format } from "date-fns";
-import { Calendar, Clock, MessageCircle, Upload, MapPin } from "lucide-react";
+import { Calendar, Clock, MessageCircle, Upload, MapPin, XCircle } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import type { Appointment } from "@/lib/types";
 
@@ -13,6 +24,7 @@ interface AppointmentCardProps {
   variant?: "upcoming" | "history";
   onContactWhatsApp?: () => void;
   onSendPayment?: () => void;
+  onCancel?: (id: string) => void;
 }
 
 const statusConfig = {
@@ -43,10 +55,12 @@ export function AppointmentCard({
   variant = "upcoming",
   onContactWhatsApp,
   onSendPayment,
+  onCancel,
 }: AppointmentCardProps) {
   const status = statusConfig[appointment.status];
   const isPending = appointment.status === "pending";
   const isUpcoming = variant === "upcoming" && appointment.status !== "cancelled";
+  const canCancel = isUpcoming && (appointment.status === "pending" || appointment.status === "confirmed");
 
   return (
     <Card className={cn(
@@ -137,6 +151,38 @@ export function AppointmentCard({
               <Upload className="mr-2 size-4" />
               Send Payment Proof
             </Button>
+          )}
+
+          {canCancel && onCancel && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                >
+                  <XCircle className="mr-2 size-4" />
+                  Cancel Appointment
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Cancel Appointment</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to cancel this appointment?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Keep Appointment</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onCancel(appointment.id)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Yes, Cancel
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </CardFooter>
       )}

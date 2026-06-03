@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon, Clock, User, FileText, X } from 'lucide-react';
@@ -28,7 +28,6 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Appointment } from '@/lib/types';
-import { mockPatients, treatmentTypes, timeSlots } from '@/lib/mock-data';
 
 interface AppointmentDialogProps {
   open: boolean;
@@ -37,6 +36,19 @@ interface AppointmentDialogProps {
   selectedDate?: Date;
   onSave: (appointment: Partial<Appointment>) => void;
   onDelete?: (id: string) => void;
+}
+
+interface TreatmentTypeOption {
+  name: string;
+  duration: number;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function addMinutes(time: string, minutes: number): string {
+  const [h, m] = time.split(':').map(Number);
+  const total = h * 60 + m + minutes;
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 }
 
 export function AppointmentDialog({
@@ -48,16 +60,55 @@ export function AppointmentDialog({
   onDelete,
 }: AppointmentDialogProps) {
   const isEditing = !!appointment;
-  const [date, setDate] = useState<Date>(appointment?.date || selectedDate || new Date());
-  const [patientId, setPatientId] = useState(appointment?.patientId || '');
-  const [treatmentType, setTreatmentType] = useState(appointment?.treatmentType || '');
-  const [startTime, setStartTime] = useState(appointment?.startTime || '09:00');
-  const [endTime, setEndTime] = useState(appointment?.endTime || '09:30');
-  const [notes, setNotes] = useState(appointment?.notes || '');
-  const [status, setStatus] = useState(appointment?.status || 'pending');
+
+  // ── Fetched data ──────────────────────────────────────────────────────────
+  const [patients, setPatients] = useState<{ id: string; name: string; avatar?: string }[]>([]);
+  const [treatmentTypes, setTreatmentTypes] = useState<TreatmentTypeOption[]>([]);
+
+  // ── Form state ────────────────────────────────────────────────────────────
+  const [date, setDate] = useState<Date>(new Date());
+  const [patientId, setPatientId] = useState('');
+  const [treatmentType, setTreatmentType] = useState('');
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('09:30');
+  const [notes, setNotes] = useState('');
+  const [status, setStatus] = useState<Appointment['status']>('pending');
+
+  // ── Sync form state when dialog opens with a different appointment ─────────
+  useEffect(() => {
+    setDate(appointment?.date || selectedDate || new Date());
+    setPatientId(appointment?.patientId || '');
+    setTreatmentType(appointment?.treatmentType || '');
+    setStartTime(appointment?.startTime || '09:00');
+    setEndTime(appointment?.endTime || '09:30');
+    setNotes(appointment?.notes || '');
+    setStatus(appointment?.status || 'pending');
+  }, [appointment, selectedDate]);
+
+  // ── Auto-calculate endTime when treatment or startTime changes ────────────
+  useEffect(() => {
+    const treatment = treatmentTypes.find((t) => t.name === treatmentType);
+    if (treatment && startTime) {
+      setEndTime(addMinutes(startTime, treatment.duration));
+    }
+  }, [treatmentType, startTime, treatmentTypes]);
+
+  // ── Fetch patients and treatment types when dialog opens ──────────────────
+  useEffect(() => {
+    if (open) {
+      fetch('/api/patients?search=a')
+        .then((r) => r.json())
+        .then((data) => setPatients(data.patients ?? []))
+        .catch(() => setPatients([]));
+      fetch('/api/treatment-types')
+        .then((r) => r.json())
+        .then((data) => setTreatmentTypes(data.treatmentTypes ?? []))
+        .catch(() => setTreatmentTypes([]));
+    }
+  }, [open]);
 
   const handleSave = () => {
-    const patient = mockPatients.find(p => p.id === patientId);
+    const patient = patients.find(p => p.id === patientId);
     onSave({
       id: appointment?.id,
       patientId,
@@ -68,8 +119,7 @@ export function AppointmentDialog({
       startTime,
       endTime,
       notes,
-      status: status as Appointment['status'],
-      professionalId: '1',
+      status,
     });
     onOpenChange(false);
   };
@@ -95,7 +145,7 @@ export function AppointmentDialog({
                 <SelectValue placeholder="Select a patient" />
               </SelectTrigger>
               <SelectContent>
-                {mockPatients.map((patient) => (
+                {patients.map((patient) => (
                   <SelectItem key={patient.id} value={patient.id}>
                     {patient.name}
                   </SelectItem>
@@ -116,8 +166,8 @@ export function AppointmentDialog({
               </SelectTrigger>
               <SelectContent>
                 {treatmentTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
+                  <SelectItem key={type.name} value={type.name}>
+                    {type.name} ({type.duration}min)
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -166,7 +216,13 @@ export function AppointmentDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {timeSlots.map((time) => (
+                  {Array.from({ length: 24 }, (_, i) =>
+                    `${String(i).padStart(2, '0')}:00`
+                  ).concat(
+                    Array.from({ length: 24 }, (_, i) =>
+                      `${String(i).padStart(2, '0')}:30`
+                    )
+                  ).sort().map((time) => (
                     <SelectItem key={time} value={time}>
                       {time}
                     </SelectItem>
@@ -176,18 +232,12 @@ export function AppointmentDialog({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="endTime">End Time</Label>
-              <Select value={endTime} onValueChange={setEndTime}>
-                <SelectTrigger id="endTime">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {timeSlots.map((time) => (
-                    <SelectItem key={time} value={time}>
-                      {time}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                id="endTime"
+                value={endTime}
+                readOnly
+                className="bg-muted/50 text-muted-foreground cursor-default"
+              />
             </div>
           </div>
 

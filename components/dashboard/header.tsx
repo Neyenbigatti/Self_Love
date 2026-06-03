@@ -16,6 +16,7 @@ import {
 
 interface HeaderProps {
   onMenuClick?: () => void
+  onLogout?: () => void
   professional: {
     name: string
     title: string
@@ -23,7 +24,7 @@ interface HeaderProps {
   }
 }
 
-export function Header({ onMenuClick, professional }: HeaderProps) {
+export function Header({ onMenuClick, onLogout, professional }: HeaderProps) {
   const [hasNotifications] = useState(true)
 
   return (
@@ -103,7 +104,10 @@ export function Header({ onMenuClick, professional }: HeaderProps) {
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive focus:text-destructive">
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onSelect={onLogout}
+            >
               <LogOut className="mr-2 h-4 w-4" />
               Log out
             </DropdownMenuItem>

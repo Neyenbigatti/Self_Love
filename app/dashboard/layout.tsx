@@ -12,7 +12,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, logout } = useAuth()
   const router = useRouter()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -71,6 +71,10 @@ export default function DashboardLayout({
         <Header
           professional={professional}
           onMenuClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          onLogout={async () => {
+            await logout()
+            router.replace('/')
+          }}
         />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {children}

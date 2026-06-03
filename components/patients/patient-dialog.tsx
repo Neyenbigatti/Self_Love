@@ -34,7 +34,7 @@ interface PatientDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   patient?: Patient | null;
-  onSave: (patient: Partial<Patient>) => void;
+  onSave: (patient: Patient) => void;
 }
 
 export function PatientDialog({
@@ -44,6 +44,7 @@ export function PatientDialog({
   onSave,
 }: PatientDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState(patient?.name || "");
   const [email, setEmail] = useState(patient?.email || "");
   const [phone, setPhone] = useState(patient?.phone || "");
@@ -56,36 +57,78 @@ export function PatientDialog({
 
   const isEditing = !!patient;
 
+  // Reset form when dialog opens with different patient
+  // (handled by key prop or external state — for now we pin initial values on open)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      const body: Record<string, unknown> = {
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        dateOfBirth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : undefined,
+        gender: gender || undefined,
+        address: address.trim() || undefined,
+        notes: notes.trim() || undefined,
+      };
 
-    onSave({
-      id: patient?.id,
-      name,
-      email,
-      phone,
-      dateOfBirth,
-      gender: gender as Patient["gender"],
-      address,
-      notes,
-    });
+      const url = isEditing ? `/api/patients/${patient!.id}` : "/api/patients";
+      const method = isEditing ? "PATCH" : "POST";
 
-    setLoading(false);
-    onOpenChange(false);
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
-    // Reset form
-    if (!isEditing) {
-      setName("");
-      setEmail("");
-      setPhone("");
-      setDateOfBirth(undefined);
-      setGender("");
-      setAddress("");
-      setNotes("");
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || `Failed to ${isEditing ? "update" : "create"} patient`);
+      }
+
+      // Convert API response to component Patient type
+      const saved = data.patient || data;
+      const savedPatient: Patient = {
+        id: saved.id,
+        name: saved.name,
+        email: saved.email,
+        phone: saved.phone,
+        avatar: saved.avatar ?? undefined,
+        dateOfBirth: saved.dateOfBirth ? new Date(saved.dateOfBirth) : undefined,
+        gender: saved.gender as Patient["gender"],
+        address: saved.address ?? undefined,
+        notes: saved.notes ?? undefined,
+        totalVisits: saved.totalVisits ?? (isEditing ? patient!.totalVisits : 0),
+        lastVisit: saved.lastVisit
+          ? new Date(saved.lastVisit)
+          : isEditing
+          ? patient!.lastVisit
+          : undefined,
+        createdAt: saved.createdAt ? new Date(saved.createdAt) : new Date(),
+      };
+
+      onSave(savedPatient);
+      onOpenChange(false);
+
+      // Reset form
+      if (!isEditing) {
+        setName("");
+        setEmail("");
+        setPhone("");
+        setDateOfBirth(undefined);
+        setGender("");
+        setAddress("");
+        setNotes("");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -104,6 +147,13 @@ export function PatientDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Error banner */}
+          {error && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
           <div className="flex flex-col gap-2">
             <label htmlFor="name" className="text-sm font-medium">
               Full Name *
@@ -166,9 +216,6 @@ export function PatientDialog({
                     mode="single"
                     selected={dateOfBirth}
                     onSelect={setDateOfBirth}
-                    captionLayout="dropdown"
-                    fromYear={1920}
-                    toYear={new Date().getFullYear()}
                   />
                 </PopoverContent>
               </Popover>
@@ -218,6 +265,7 @@ export function PatientDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={loading}
             >
               Cancel
             </Button>

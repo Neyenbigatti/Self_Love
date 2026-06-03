@@ -12,6 +12,12 @@ export const users = sqliteTable('users', {
   role: text('role', { enum: ['patient', 'professional'] }).notNull(),
   avatar: text('avatar'),
 
+  // Patient profile fields
+  dateOfBirth: text('date_of_birth'),
+  gender: text('gender'),
+  address: text('address'),
+  notes: text('notes'),
+
   // Professional-only fields
   title: text('title'),
   clinicName: text('clinic_name'),

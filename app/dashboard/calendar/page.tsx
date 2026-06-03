@@ -1,18 +1,37 @@
 'use client';
 
-import { useState } from 'react';
-import { addWeeks, subWeeks } from 'date-fns';
+import { useState, useEffect } from 'react';
+import { addWeeks, subWeeks, parseISO, format } from 'date-fns';
 import { WeekView } from '@/components/calendar/week-view';
 import { MiniCalendar } from '@/components/calendar/mini-calendar';
 import { AppointmentDialog } from '@/components/calendar/appointment-dialog';
 import { Appointment } from '@/lib/types';
-import { mockAppointments } from '@/lib/mock-data';
 
 export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+
+  // ── Fetch appointments from API on mount ──────────────────────────────────
+  useEffect(() => {
+    fetch('/api/appointments')
+      .then((r) => r.json())
+      .then((data) => {
+        const transformed = (data.appointments ?? []).map(
+          (apt: Record<string, unknown>) => ({
+            ...apt,
+            date: parseISO(apt.date as string),
+          }),
+        ) as Appointment[];
+        setAppointments(transformed);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch appointments:', err);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleWeekChange = (direction: 'prev' | 'next') => {
     setSelectedDate((prev) =>
@@ -30,24 +49,67 @@ export default function CalendarPage() {
     setDialogOpen(true);
   };
 
-  const handleSaveAppointment = (data: Partial<Appointment>) => {
-    if (data.id) {
-      // Update existing
-      setAppointments((prev) =>
-        prev.map((apt) => (apt.id === data.id ? { ...apt, ...data } as Appointment : apt))
-      );
-    } else {
-      // Create new
-      const newAppointment: Appointment = {
+  const handleSaveAppointment = async (data: Partial<Appointment>) => {
+    try {
+      const body: Record<string, unknown> = {
         ...data,
-        id: String(Date.now()),
-      } as Appointment;
-      setAppointments((prev) => [...prev, newAppointment]);
+        date: data.date ? format(data.date, 'yyyy-MM-dd') : undefined,
+      };
+      delete body.id;
+
+      if (data.id) {
+        // PATCH existing
+        const res = await fetch(`/api/appointments/${data.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          console.error('Failed to update appointment:', err);
+          return;
+        }
+      } else {
+        // POST new
+        const res = await fetch('/api/appointments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          console.error('Failed to create appointment:', err);
+          return;
+        }
+      }
+
+      // Re-fetch appointments after save
+      const res = await fetch('/api/appointments');
+      const json = await res.json();
+      const transformed = (json.appointments ?? []).map(
+        (apt: Record<string, unknown>) => ({
+          ...apt,
+          date: parseISO(apt.date as string),
+        }),
+      ) as Appointment[];
+      setAppointments(transformed);
+    } catch (err) {
+      console.error('Failed to save appointment:', err);
     }
   };
 
-  const handleDeleteAppointment = (id: string) => {
-    setAppointments((prev) => prev.filter((apt) => apt.id !== id));
+  const handleDeleteAppointment = async (id: string) => {
+    try {
+      const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const err = await res.json();
+        console.error('Failed to delete appointment:', err);
+        return;
+      }
+      setAppointments((prev) => prev.filter((apt) => apt.id !== id));
+    } catch (err) {
+      console.error('Failed to delete appointment:', err);
+    }
   };
 
   return (

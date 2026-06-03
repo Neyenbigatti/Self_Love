@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,18 +18,23 @@ import {
 import { Menu, X, Calendar, Clock, User, LogOut, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface PatientNavbarProps {
-  patientName: string;
-  patientAvatar?: string;
-}
-
-export function PatientNavbar({ patientName, patientAvatar }: PatientNavbarProps) {
+export function PatientNavbar() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const patientName = user?.name ?? "";
+  const patientAvatar = user?.avatar ?? undefined;
   const initials = patientName
     .split(" ")
     .map((n) => n[0])
     .join("")
     .slice(0, 2);
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/");
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
@@ -104,11 +111,9 @@ export function PatientNavbar({ patientName, patientAvatar }: PatientNavbarProps
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/" className="flex items-center">
-                  <LogOut className="mr-2 size-4" />
-                  <span>Sign Out</span>
-                </Link>
+              <DropdownMenuItem onSelect={handleLogout}>
+                <LogOut className="mr-2 size-4" />
+                  <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

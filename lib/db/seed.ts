@@ -62,11 +62,51 @@ async function seed() {
 
   // ── Patients ────────────────────────────────────────────────────────────
   const patientData = [
-    { name: 'María García López', email: 'maria.garcia@email.com', phone: '+34 612 345 678' },
-    { name: 'Carlos Rodríguez Fernández', email: 'carlos.rodriguez@email.com', phone: '+34 623 456 789' },
-    { name: 'Ana Martínez Sánchez', email: 'ana.martinez@email.com', phone: '+34 634 567 890' },
-    { name: 'Pedro Gómez Ruiz', email: 'pedro.gomez@email.com', phone: '+34 645 678 901' },
-    { name: 'Laura Hernández Díaz', email: 'laura.hernandez@email.com', phone: '+34 656 789 012' },
+    {
+      name: 'María García López',
+      email: 'maria.garcia@email.com',
+      phone: '+34 612 345 678',
+      dateOfBirth: '1992-04-15',
+      gender: 'female',
+      address: 'Calle Mayor 123, 28013 Madrid',
+      notes: 'Alérgica a la penicilina. Prefiere citas por la mañana.',
+    },
+    {
+      name: 'Carlos Rodríguez Fernández',
+      email: 'carlos.rodriguez@email.com',
+      phone: '+34 623 456 789',
+      dateOfBirth: '1985-09-22',
+      gender: 'male',
+      address: 'Av. Diagonal 456, 08006 Barcelona',
+      notes: 'Paciente recurrente. Tratamientos cada 3 meses.',
+    },
+    {
+      name: 'Ana Martínez Sánchez',
+      email: 'ana.martinez@email.com',
+      phone: '+34 634 567 890',
+      dateOfBirth: '1998-12-03',
+      gender: 'female',
+      address: 'Gran Vía 78, 2ºB, 48001 Bilbao',
+      notes: 'Primeriza en tratamientos estéticos. Piel sensible.',
+    },
+    {
+      name: 'Pedro Gómez Ruiz',
+      email: 'pedro.gomez@email.com',
+      phone: '+34 645 678 901',
+      dateOfBirth: '1979-07-18',
+      gender: 'male',
+      address: 'Plaza del Ayuntamiento 5, 46002 Valencia',
+      notes: 'Prefiere comunicación por WhatsApp. Disponible solo fines de semana.',
+    },
+    {
+      name: 'Laura Hernández Díaz',
+      email: 'laura.hernandez@email.com',
+      phone: '+34 656 789 012',
+      dateOfBirth: '2001-03-30',
+      gender: 'female',
+      address: 'Calle San Fernando 34, 41004 Sevilla',
+      notes: 'Estudiante universitaria. Presupuesto ajustado.',
+    },
   ];
 
   const patientIds: string[] = [];
@@ -80,6 +120,10 @@ async function seed() {
       name: p.name,
       phone: p.phone,
       role: 'patient',
+      dateOfBirth: p.dateOfBirth,
+      gender: p.gender,
+      address: p.address,
+      notes: p.notes,
     });
   }
   console.log(`  ✅ ${patientData.length} patients created`);

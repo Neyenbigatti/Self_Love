@@ -9,10 +9,14 @@ export default function AuthPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
 
-  // Redirect authenticated professionals to dashboard
+  // Redirect authenticated users to their respective portals
   useEffect(() => {
-    if (!isLoading && user?.role === 'professional') {
-      router.replace('/dashboard')
+    if (!isLoading && user) {
+      if (user.role === 'professional') {
+        router.replace('/dashboard')
+      } else if (user.role === 'patient') {
+        router.replace('/patient')
+      }
     }
   }, [user, isLoading, router])
 

@@ -158,24 +158,34 @@ export function WeekView({
                 ))}
 
                 {/* Appointments */}
-                {dayAppointments.map((apt) => (
-                  <button
-                    key={apt.id}
-                    onClick={() => onAppointmentClick(apt)}
-                    className={cn(
-                      "absolute left-1 right-1 px-2 py-1 rounded-md border-l-2 text-left text-xs overflow-hidden transition-all hover:shadow-md",
-                      getStatusColor(apt.status)
-                    )}
-                    style={{
-                      top: `${getAppointmentPosition(apt.startTime)}px`,
-                      height: `${getAppointmentHeight(apt.startTime, apt.endTime)}px`,
-                    }}
-                  >
-                    <div className="font-medium truncate">{apt.patientName}</div>
-                    <div className="truncate opacity-80">{apt.treatmentType}</div>
-                    <div className="opacity-70">{apt.startTime}</div>
-                  </button>
-                ))}
+                {dayAppointments.map((apt) => {
+                  const aptHeight = getAppointmentHeight(apt.startTime, apt.endTime);
+                  const isShort = aptHeight < 48;
+
+                  return (
+                    <button
+                      key={apt.id}
+                      onClick={() => onAppointmentClick(apt)}
+                      title={`${apt.patientName} — ${apt.treatmentType} (${apt.startTime})`}
+                      className={cn(
+                        "absolute left-1 right-1 rounded-md border-l-2 text-left text-xs overflow-hidden transition-all hover:shadow-md",
+                        getStatusColor(apt.status),
+                        isShort ? "px-1.5 py-0.5" : "px-2 py-1"
+                      )}
+                      style={{
+                        top: `${getAppointmentPosition(apt.startTime)}px`,
+                        height: `${Math.max(aptHeight, 24)}px`,
+                        minHeight: '24px',
+                      }}
+                    >
+                      <div className="font-medium truncate leading-tight">{apt.patientName}</div>
+                      {!isShort && (
+                        <div className="truncate opacity-80 leading-tight">{apt.treatmentType}</div>
+                      )}
+                      <div className="opacity-70 leading-tight">{apt.startTime}</div>
+                    </button>
+                  );
+                })}
               </div>
             );
           })}

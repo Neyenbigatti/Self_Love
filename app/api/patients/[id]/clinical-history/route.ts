@@ -102,8 +102,10 @@ export async function GET(
         startTime: appointments.startTime,
         endTime: appointments.endTime,
         notes: appointments.notes,
+        professionalName: users.name,
       })
       .from(appointments)
+      .leftJoin(users, eq(appointments.professionalId, users.id))
       .where(
         and(
           eq(appointments.patientId, id),

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { appointments, users } from '@/lib/db/schema';
 import { eq, and, or, lte, gte, lt, gt, ne } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/sqlite-core';
 import { getSession } from '@/lib/auth';
 import { requireRole } from '@/lib/api/auth-guard';
 import { validate } from '@/lib/api/validators/common';
@@ -50,7 +51,9 @@ export async function GET(request: Request) {
       filters.push(eq(appointments.status, status as typeof appointments.status.enumValues[number]));
     }
 
-    // ── Query with patient join ─────────────────────────────────────────────
+    const professionalUser = alias(users, 'professional');
+
+    // ── Query with patient + professional joins ─────────────────────────────
     const rows = await db
       .select({
         id: appointments.id,
@@ -65,9 +68,11 @@ export async function GET(request: Request) {
         createdAt: appointments.createdAt,
         patientName: users.name,
         patientAvatar: users.avatar,
+        professionalName: professionalUser.name,
       })
       .from(appointments)
       .leftJoin(users, eq(appointments.patientId, users.id))
+      .leftJoin(professionalUser, eq(appointments.professionalId, professionalUser.id))
       .where(and(...filters))
       .orderBy(appointments.date, appointments.startTime);
 

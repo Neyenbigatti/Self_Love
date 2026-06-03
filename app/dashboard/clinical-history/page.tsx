@@ -135,7 +135,7 @@ export default function ClinicalHistoryPage() {
     date: new Date(apt.date + "T" + (apt.startTime || "00:00")),
     treatment: apt.treatmentType,
     notes: apt.notes || "",
-    professional: "", // filled from session context
+    professional: apt.professionalName || "Professional",
   })) ?? [];
 
   // ── Loading state ─────────────────────────────────────────────────────────

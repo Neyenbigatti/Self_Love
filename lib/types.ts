@@ -12,6 +12,7 @@ export interface Appointment {
   status: AppointmentStatus;
   notes?: string;
   professionalId: string;
+  professionalName?: string;
 }
 
 export interface Patient {
@@ -132,6 +133,7 @@ export interface ClinicalHistoryResponse {
     startTime: string;
     endTime: string;
     notes: string | null;
+    professionalName: string;
   }>;
   explorations: Array<{
     id: string;

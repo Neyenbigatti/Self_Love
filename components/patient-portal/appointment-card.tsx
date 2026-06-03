@@ -60,7 +60,7 @@ export function AppointmentCard({
               {appointment.treatmentType}
             </h3>
             <p className="text-sm text-muted-foreground">
-              Dr. Elena Vázquez
+              {appointment.professionalName || 'Professional'}
             </p>
           </div>
           <Badge className={cn("shrink-0", status.className)}>

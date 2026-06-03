@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
+import type { SkinEvaluationData } from "@/lib/types";
 
 const skinTypes = [
   { value: "I", label: "Type I - Very Fair", description: "Always burns, never tans" },
@@ -44,17 +45,6 @@ const skinConcerns = [
   { id: "dark-circles", label: "Dark Circles" },
   { id: "volume-loss", label: "Volume Loss" },
 ];
-
-interface SkinEvaluationData {
-  skinType: string;
-  skinCondition: string;
-  concerns: string[];
-  elasticity: "excellent" | "good" | "fair" | "poor";
-  hydrationLevel: number;
-  oilLevel: number;
-  sensitivityLevel: "none" | "mild" | "moderate" | "severe";
-  notes: string;
-}
 
 const defaultData: SkinEvaluationData = {
   skinType: "",

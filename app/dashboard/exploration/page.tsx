@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,57 +10,287 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FacialAnalysisForm } from "@/components/exploration/facial-diagram";
 import { SkinEvaluationForm } from "@/components/exploration/skin-evaluation";
 import { PhotoCapture } from "@/components/exploration/photo-capture";
-import { mockPatients } from "@/lib/mock-data";
-import type { FacialAnalysis, ExplorationPhoto } from "@/lib/types";
+import { toast } from "sonner";
+import type { FacialAnalysis, ExplorationPhoto, SkinEvaluationData } from "@/lib/types";
 import { format } from "date-fns";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface PatientOption {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  avatar: string | null;
+  dateOfBirth: string | null;
+  totalVisits: number;
+}
+
+interface ExplorationResponse {
+  id: string;
+  patientId: string;
+  professionalId: string;
+  skinEvaluation: SkinEvaluationData | null;
+  facialAnalysis: Partial<FacialAnalysis> | null;
+  notes: string | null;
+  date: string;
+  photos: ExplorationPhoto[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function todayStr() {
+  return new Date().toISOString().split("T")[0];
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function PhysicalExplorationPage() {
   const searchParams = useSearchParams();
-  const preselectedPatientId = searchParams.get("patient");
-  
-  const [selectedPatientId, setSelectedPatientId] = useState<string>(preselectedPatientId || "");
+  const preselectedPatientId = searchParams.get("patientId");
+
+  // ── Patient state ──────────────────────────────────────────────────────────
+  const [patients, setPatients] = useState<PatientOption[]>([]);
+  const [isLoadingPatients, setIsLoadingPatients] = useState(true);
+  const [patientsError, setPatientsError] = useState<string | null>(null);
+
+  // ── Exploration state ──────────────────────────────────────────────────────
+  const [selectedPatientId, setSelectedPatientId] = useState<string>(
+    preselectedPatientId || "",
+  );
+  const [explorationId, setExplorationId] = useState<string | null>(null);
+  const [explorationKey, setExplorationKey] = useState(0);
+  const [isLoadingExploration, setIsLoadingExploration] = useState(false);
+  const [explorationError, setExplorationError] = useState<string | null>(null);
+
+  // ── Form state ─────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState("skin");
   const [facialAnalysis, setFacialAnalysis] = useState<Partial<FacialAnalysis>>({});
-  const [skinEvaluation, setSkinEvaluation] = useState({});
+  const [skinEvaluation, setSkinEvaluation] = useState<SkinEvaluationData | object>({});
   const [photos, setPhotos] = useState<ExplorationPhoto[]>([]);
+  const [notes, setNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  const selectedPatient = mockPatients.find((p) => p.id === selectedPatientId);
+  // ── Fetch patients on mount ────────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
 
+    const load = async () => {
+      try {
+        const res = await fetch("/api/patients");
+        if (!res.ok) throw new Error("Error al cargar pacientes");
+        const data = await res.json();
+        if (!cancelled) setPatients(data.patients ?? []);
+      } catch (err) {
+        if (!cancelled) {
+          setPatientsError(
+            err instanceof Error ? err.message : "Error al cargar pacientes",
+          );
+        }
+      } finally {
+        if (!cancelled) setIsLoadingPatients(false);
+      }
+    };
+
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
+  // ── Fetch exploration when patient changes ─────────────────────────────────
+  useEffect(() => {
+    if (!selectedPatientId) {
+      resetForm();
+      setIsLoadingExploration(false);
+      setExplorationError(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const load = async () => {
+      setIsLoadingExploration(true);
+      setExplorationError(null);
+
+      try {
+        const res = await fetch(
+          `/api/explorations?patientId=${encodeURIComponent(selectedPatientId)}`,
+        );
+        if (!res.ok) throw new Error("Error al cargar exploración");
+        const data = await res.json();
+
+        if (cancelled) return;
+
+        if (data.explorations && data.explorations.length > 0) {
+          const exp: ExplorationResponse = data.explorations[0];
+          setExplorationId(exp.id);
+          setSkinEvaluation(exp.skinEvaluation ?? {});
+          setFacialAnalysis(exp.facialAnalysis ?? {});
+          setPhotos(exp.photos ?? []);
+          setNotes(exp.notes ?? "");
+        } else {
+          resetForm();
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setExplorationError(
+            err instanceof Error ? err.message : "Error al cargar exploración",
+          );
+          // Allow create even on fetch error (lazy-create)
+          resetForm();
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingExploration(false);
+          // Force form remount with fresh initialData
+          setExplorationKey((k) => k + 1);
+        }
+      }
+    };
+
+    load();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPatientId]);
+
+  // ── Reset form ─────────────────────────────────────────────────────────────
+  const resetForm = useCallback(() => {
+    setExplorationId(null);
+    setSkinEvaluation({});
+    setFacialAnalysis({});
+    setPhotos([]);
+    setNotes("");
+  }, []);
+
+  // ── Save handler ───────────────────────────────────────────────────────────
   const handleSave = async () => {
+    if (!selectedPatientId) return;
+
     setIsSaving(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Saving exploration:", {
+
+    const body = {
       patientId: selectedPatientId,
-      facialAnalysis,
+      date: todayStr(),
       skinEvaluation,
+      facialAnalysis,
+      notes,
       photos,
-    });
-    setIsSaving(false);
-    alert("Physical exploration saved successfully!");
+    };
+
+    try {
+      let res: Response;
+
+      if (explorationId) {
+        // ── Update existing ────────────────────────────────────────────────
+        res = await fetch(`/api/explorations/${explorationId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+      } else {
+        // ── Create new (lazy-create) ────────────────────────────────────────
+        res = await fetch("/api/explorations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+      }
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Error al guardar exploración");
+      }
+
+      const result = await res.json();
+
+      // Store the returned exploration ID for subsequent updates
+      if (!explorationId && result.exploration) {
+        setExplorationId(result.exploration.id);
+      }
+
+      toast.success("Exploración guardada correctamente");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Error al guardar exploración";
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  const selectedPatient = patients.find((p) => p.id === selectedPatientId);
+
+  // ── Loading state ──────────────────────────────────────────────────────────
+  if (isLoadingPatients) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-64 bg-muted rounded" />
+          <div className="h-4 w-96 bg-muted rounded" />
+          <div className="h-24 bg-muted rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Error state ────────────────────────────────────────────────────────────
+  if (patientsError) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-serif font-semibold text-foreground">
+            Physical Exploration
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            No se pudieron cargar los pacientes
+          </p>
+        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <svg className="size-16 text-destructive mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 className="text-lg font-medium">Error</h3>
+            <p className="text-muted-foreground mt-1 max-w-md">{patientsError}</p>
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={() => window.location.reload()}
+            >
+              Reintentar
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-serif font-semibold text-foreground">Physical Exploration</h1>
+          <h1 className="text-2xl font-serif font-semibold text-foreground">
+            Physical Exploration
+          </h1>
           <p className="text-muted-foreground mt-1">
             Document comprehensive skin analysis and facial evaluation
           </p>
         </div>
-        <Button onClick={handleSave} disabled={!selectedPatientId || isSaving}>
+        <Button
+          onClick={handleSave}
+          disabled={!selectedPatientId || isSaving || isLoadingExploration}
+        >
           {isSaving ? (
             <>
               <svg className="animate-spin size-4 mr-2" fill="none" viewBox="0 0 24 24">
@@ -74,7 +304,7 @@ export default function PhysicalExplorationPage() {
               <svg className="size-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Save Exploration
+              {explorationId ? "Update Exploration" : "Save Exploration"}
             </>
           )}
         </Button>
@@ -88,17 +318,25 @@ export default function PhysicalExplorationPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
-            <Select value={selectedPatientId} onValueChange={setSelectedPatientId}>
+            <Select
+              value={selectedPatientId}
+              onValueChange={(value) => {
+                setSelectedPatientId(value);
+                setActiveTab("skin");
+              }}
+            >
               <SelectTrigger className="md:w-80">
                 <SelectValue placeholder="Select a patient" />
               </SelectTrigger>
               <SelectContent>
-                {mockPatients.map((patient) => (
+                {patients.map((patient) => (
                   <SelectItem key={patient.id} value={patient.id}>
                     <div className="flex items-center gap-2">
                       <Avatar className="size-6">
-                        <AvatarImage src={patient.avatar} alt={patient.name} />
-                        <AvatarFallback className="text-xs">{getInitials(patient.name)}</AvatarFallback>
+                        <AvatarImage src={patient.avatar ?? undefined} alt={patient.name} />
+                        <AvatarFallback className="text-xs">
+                          {getInitials(patient.name)}
+                        </AvatarFallback>
                       </Avatar>
                       <span>{patient.name}</span>
                     </div>
@@ -110,7 +348,7 @@ export default function PhysicalExplorationPage() {
             {selectedPatient && (
               <div className="flex items-center gap-4 p-3 bg-muted rounded-lg flex-1">
                 <Avatar className="size-12">
-                  <AvatarImage src={selectedPatient.avatar} alt={selectedPatient.name} />
+                  <AvatarImage src={selectedPatient.avatar ?? undefined} alt={selectedPatient.name} />
                   <AvatarFallback>{getInitials(selectedPatient.name)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
@@ -122,14 +360,6 @@ export default function PhysicalExplorationPage() {
                     {selectedPatient.totalVisits} visits
                   </p>
                 </div>
-                {selectedPatient.medicalHistory?.allergies && selectedPatient.medicalHistory.allergies.length > 0 && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-destructive/10 text-destructive rounded text-xs font-medium">
-                    <svg className="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    Allergies
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -138,25 +368,64 @@ export default function PhysicalExplorationPage() {
 
       {/* Main Content */}
       {selectedPatientId ? (
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="skin">Skin Evaluation</TabsTrigger>
-            <TabsTrigger value="facial">Facial Analysis</TabsTrigger>
-            <TabsTrigger value="photos">Photo Documentation</TabsTrigger>
-          </TabsList>
+        isLoadingExploration ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <svg className="animate-spin size-10 text-muted-foreground mb-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              <h3 className="text-lg font-medium">Loading Exploration</h3>
+              <p className="text-muted-foreground mt-1">
+                Loading existing data for this patient...
+              </p>
+            </CardContent>
+          </Card>
+        ) : explorationError && !explorationId ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <svg className="size-12 text-muted-foreground mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h3 className="text-lg font-medium">Could not load existing data</h3>
+              <p className="text-muted-foreground mt-1 max-w-md">
+                You can still create a new exploration.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="skin">Skin Evaluation</TabsTrigger>
+              <TabsTrigger value="facial">Facial Analysis</TabsTrigger>
+              <TabsTrigger value="photos">Photo Documentation</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="skin" className="mt-6">
-            <SkinEvaluationForm onChange={setSkinEvaluation} />
-          </TabsContent>
+            <TabsContent value="skin" className="mt-6">
+              <SkinEvaluationForm
+                key={explorationKey}
+                initialData={skinEvaluation as Partial<SkinEvaluationData>}
+                onChange={(data) => setSkinEvaluation(data)}
+              />
+            </TabsContent>
 
-          <TabsContent value="facial" className="mt-6">
-            <FacialAnalysisForm onChange={setFacialAnalysis} />
-          </TabsContent>
+            <TabsContent value="facial" className="mt-6">
+              <FacialAnalysisForm
+                key={explorationKey}
+                initialData={facialAnalysis}
+                onChange={setFacialAnalysis}
+              />
+            </TabsContent>
 
-          <TabsContent value="photos" className="mt-6">
-            <PhotoCapture photos={photos} onPhotosChange={setPhotos} />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="photos" className="mt-6">
+              <PhotoCapture
+                key={explorationKey}
+                photos={photos}
+                onPhotosChange={setPhotos}
+              />
+            </TabsContent>
+          </Tabs>
+        )
       ) : (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">

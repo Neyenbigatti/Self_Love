@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { UserCircle, Loader2 } from "lucide-react";
 import { PatientList } from "@/components/patients/patient-list";
 import { PatientDetail } from "@/components/patients/patient-detail";
@@ -117,8 +118,13 @@ export default function PatientsPage() {
     setSelectedPatient(savedPatient);
   };
 
+  const router = useRouter();
+
   const handleNewExploration = () => {
-    alert("Physical exploration feature coming soon!");
+    if (!selectedPatient) return;
+    router.push(
+      `/dashboard/exploration?patientId=${selectedPatient.id}`
+    );
   };
 
   // ── Loading state ─────────────────────────────────────────────────────────

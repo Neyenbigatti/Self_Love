@@ -15,7 +15,7 @@
 import { randomUUID } from 'node:crypto';
 import { hashSync } from 'bcryptjs';
 import { db } from './client';
-import { users, appointments, availability, treatmentTypes } from './schema';
+import { users, appointments, availability, treatmentTypes, explorations, explorationPhotos } from './schema';
 import {
   addDays,
   startOfWeek,
@@ -272,6 +272,170 @@ async function seed() {
     });
   }
   console.log(`  ✅ ${sampleAppointments.length} sample appointments created`);
+
+  // ── Sample Explorations ──────────────────────────────────────────────────
+  const explorationSeedData = [
+    {
+      patientIdx: 0, // María García López (34yo, combination, pigmentation)
+      date: '2026-05-28',
+      skinEvaluation: {
+        skinType: 'III',
+        skinCondition: 'Combination',
+        concerns: ['pigmentation', 'dullness', 'dark-circles'],
+        elasticity: 'good',
+        hydrationLevel: 45,
+        oilLevel: 55,
+        sensitivityLevel: 'mild',
+        notes: 'Paciente presenta hiperpigmentación en zona malar bilateral. Dullness generalizada. Se recomienda peeling químico suave y protector solar.',
+      },
+      facialAnalysis: {
+        forehead: { condition: 'normal', notes: 'Sin particularidades', recommendedTreatments: [] },
+        glabella: { condition: 'mild', notes: 'Líneas de expresión verticales leves', recommendedTreatments: ['Botox'] },
+        periorbital: { condition: 'mild', notes: 'Patas de gallo incipientes', recommendedTreatments: ['Botox'] },
+        cheeks: { condition: 'normal', notes: 'Hiperpigmentación leve con melasma', recommendedTreatments: ['Chemical Peel'] },
+        nasolabialFolds: { condition: 'mild', notes: 'Surco nasogeniano leve', recommendedTreatments: ['Dermal Fillers'] },
+        lips: { condition: 'normal', notes: 'Volumen y forma adecuados', recommendedTreatments: [] },
+        chin: { condition: 'normal', notes: 'Sin alteraciones', recommendedTreatments: [] },
+        jawline: { condition: 'normal', notes: 'Definición adecuada', recommendedTreatments: [] },
+        neck: { condition: 'normal', notes: 'Sin particularidades', recommendedTreatments: [] },
+      },
+      notes: 'Paciente solicita tratamiento para mejorar luminosidad. Próximo paso: peeling químico + rutina de cuidado en casa con vitamina C.',
+      photos: [
+        { angle: 'front', originalName: 'maria_front.jpg', mimeType: 'image/jpeg', fileSize: 245760 },
+        { angle: 'left', originalName: 'maria_left.jpg', mimeType: 'image/jpeg', fileSize: 212992 },
+        { angle: 'right', originalName: 'maria_right.jpg', mimeType: 'image/jpeg', fileSize: 221184 },
+      ],
+    },
+    {
+      patientIdx: 1, // Carlos Rodríguez Fernández (41yo, oily, acne scarring)
+      date: '2026-05-25',
+      skinEvaluation: {
+        skinType: 'IV',
+        skinCondition: 'Oily',
+        concerns: ['acne', 'scarring', 'pores', 'texture'],
+        elasticity: 'fair',
+        hydrationLevel: 35,
+        oilLevel: 80,
+        sensitivityLevel: 'none',
+        notes: 'Piel grasa con poros dilatados en zona T. Cicatrices de acné en mejillas. Responde bien a tratamientos con ácido salicílico.',
+      },
+      facialAnalysis: {
+        forehead: { condition: 'mild', notes: 'Poros dilatados, comedones cerrados', recommendedTreatments: ['Chemical Peel'] },
+        glabella: { condition: 'normal', notes: 'Sin particularidades', recommendedTreatments: [] },
+        periorbital: { condition: 'normal', notes: 'Sin alteraciones significativas', recommendedTreatments: [] },
+        cheeks: { condition: 'moderate', notes: 'Cicatrices atróficas de acné. Poros dilatados. Textura irregular.', recommendedTreatments: ['Microneedling', 'Chemical Peel'] },
+        nasolabialFolds: { condition: 'mild', notes: 'Pliegues nasogenianos leves', recommendedTreatments: [] },
+        lips: { condition: 'normal', notes: 'Labios finos pero proporcionales al rostro', recommendedTreatments: ['Dermal Fillers'] },
+        chin: { condition: 'moderate', notes: 'Acné activo ocasional, cicatrices residuales', recommendedTreatments: ['Chemical Peel'] },
+        jawline: { condition: 'normal', notes: 'Definición adecuada', recommendedTreatments: [] },
+        neck: { condition: 'normal', notes: 'Sin alteraciones', recommendedTreatments: [] },
+      },
+      notes: 'Paciente recurrente. Completando ciclo de 3 sesiones de microneedling. Buena evolución en textura general. Pendiente valorar necesidad de tercera sesión.',
+      photos: [
+        { angle: 'front', originalName: 'carlos_front.jpg', mimeType: 'image/jpeg', fileSize: 258048 },
+        { angle: 'left', originalName: 'carlos_left.jpg', mimeType: 'image/jpeg', fileSize: 229376 },
+        { angle: 'right', originalName: 'carlos_right.jpg', mimeType: 'image/jpeg', fileSize: 233472 },
+        { angle: 'up', originalName: 'carlos_up.jpg', mimeType: 'image/jpeg', fileSize: 204800 },
+        { angle: 'down', originalName: 'carlos_down.jpg', mimeType: 'image/jpeg', fileSize: 217088 },
+      ],
+    },
+    {
+      patientIdx: 2, // Ana Martínez Sánchez (28yo, sensitive, rosacea tendency)
+      date: '2026-05-26',
+      skinEvaluation: {
+        skinType: 'II',
+        skinCondition: 'Sensitive',
+        concerns: ['redness', 'dehydration', 'sagging'],
+        elasticity: 'fair',
+        hydrationLevel: 30,
+        oilLevel: 25,
+        sensitivityLevel: 'severe',
+        notes: 'Piel sensible con tendencia a rosácea. Barrera cutánea comprometida. Precaución máxima con principios activos agresivos. Suspender cualquier producto con alcohol o fragancia.',
+      },
+      facialAnalysis: {
+        forehead: { condition: 'mild', notes: 'Leve descamación superficial', recommendedTreatments: [] },
+        glabella: { condition: 'normal', notes: 'Sin particularidades', recommendedTreatments: [] },
+        periorbital: { condition: 'mild', notes: 'Ojeras y ligera bolsa palpebral', recommendedTreatments: [] },
+        cheeks: { condition: 'mild', notes: 'Eritema difuso con telangiectasias leves', recommendedTreatments: ['Laser Treatment'] },
+        nasolabialFolds: { condition: 'normal', notes: 'Sin alteraciones', recommendedTreatments: [] },
+        lips: { condition: 'normal', notes: 'Labios hidratados, sin queilitis', recommendedTreatments: [] },
+        chin: { condition: 'normal', notes: 'Sin alteraciones', recommendedTreatments: [] },
+        jawline: { condition: 'normal', notes: 'Sin particularidades', recommendedTreatments: [] },
+        neck: { condition: 'normal', notes: 'Sin alteraciones', recommendedTreatments: [] },
+      },
+      notes: 'Primera consulta. Se recomienda tratamiento suave de hidratación profunda con ácido hialurónico y protector solar mineral SPF50+. Evitar ácidos, retinoides y exfoliantes por ahora.',
+      photos: [
+        { angle: 'front', originalName: 'ana_front.jpg', mimeType: 'image/jpeg', fileSize: 237568 },
+        { angle: 'left', originalName: 'ana_left.jpg', mimeType: 'image/jpeg', fileSize: 204800 },
+        { angle: 'right', originalName: 'ana_right.jpg', mimeType: 'image/jpeg', fileSize: 212992 },
+      ],
+    },
+    {
+      patientIdx: 3, // Pedro Gómez Ruiz (47yo, male, anti-aging)
+      date: '2026-05-24',
+      skinEvaluation: {
+        skinType: 'III',
+        skinCondition: 'Normal',
+        concerns: ['wrinkles', 'volume-loss', 'sagging'],
+        elasticity: 'poor',
+        hydrationLevel: 40,
+        oilLevel: 40,
+        sensitivityLevel: 'none',
+        notes: 'Piel normo-grasa con signos de envejecimiento cutáneo. Flacidez facial incipiente. Volumen disminuido en tercio medio facial.',
+      },
+      facialAnalysis: {
+        forehead: { condition: 'moderate', notes: 'Arrugas frontales profundas', recommendedTreatments: ['Botox'] },
+        glabella: { condition: 'moderate', notes: 'Surco glabelar pronunciado (líneas del entrecejo)', recommendedTreatments: ['Botox', 'Dermal Fillers'] },
+        periorbital: { condition: 'moderate', notes: 'Patas de gallo marcadas. Bolsas palpebrales inferiores.', recommendedTreatments: ['Botox'] },
+        cheeks: { condition: 'moderate', notes: 'Pérdida de volumen malar. Flacidez.', recommendedTreatments: ['Dermal Fillers', 'Radiofrequency'] },
+        nasolabialFolds: { condition: 'moderate', notes: 'Surco nasogeniano marcado bilateral', recommendedTreatments: ['Dermal Fillers'] },
+        lips: { condition: 'mild', notes: 'Labios finos con pérdida de volumen', recommendedTreatments: ['Dermal Fillers'] },
+        chin: { condition: 'mild', notes: 'Flacidez Mentoniana incipiente', recommendedTreatments: ['Radiofrequency'] },
+        jawline: { condition: 'moderate', notes: 'Pérdida de definición mandibular', recommendedTreatments: ['Radiofrequency', 'Thread Lift'] },
+        neck: { condition: 'mild', notes: 'Flacidez cervical leve, bandas platismales incipientes', recommendedTreatments: ['Radiofrequency'] },
+      },
+      notes: 'Paciente interesado en rejuvenecimiento facial no quirúrgico. Se propone plan combinado: toxina botulínica + rellenos + radiofrecuencia. Presupuesto presentado.',
+      photos: [
+        { angle: 'front', originalName: 'pedro_front.jpg', mimeType: 'image/jpeg', fileSize: 266240 },
+        { angle: 'left', originalName: 'pedro_left.jpg', mimeType: 'image/jpeg', fileSize: 241664 },
+        { angle: 'right', originalName: 'pedro_right.jpg', mimeType: 'image/jpeg', fileSize: 245760 },
+        { angle: 'up', originalName: 'pedro_up.jpg', mimeType: 'image/jpeg', fileSize: 221184 },
+        { angle: 'down', originalName: 'pedro_down.jpg', mimeType: 'image/jpeg', fileSize: 225280 },
+      ],
+    },
+  ];
+
+  let photoCount = 0;
+  for (const exp of explorationSeedData) {
+    const explorationId = randomUUID();
+    await db.insert(explorations).values({
+      id: explorationId,
+      patientId: patientIds[exp.patientIdx],
+      professionalId: PROFESSIONAL_ID,
+      skinEvaluation: JSON.stringify(exp.skinEvaluation),
+      facialAnalysis: JSON.stringify(exp.facialAnalysis),
+      notes: exp.notes,
+      date: exp.date,
+    });
+
+    if (exp.photos.length > 0) {
+      await db.insert(explorationPhotos).values(
+        exp.photos.map((photo) => ({
+          id: randomUUID(),
+          explorationId,
+          url: `/placeholder/explorations/${photo.originalName}`,
+          angle: photo.angle,
+          originalName: photo.originalName ?? null,
+          mimeType: photo.mimeType ?? null,
+          fileSize: photo.fileSize ?? null,
+        })),
+      );
+      photoCount += exp.photos.length;
+    }
+  }
+  console.log(`  ✅ ${explorationSeedData.length} sample explorations created`);
+  console.log(`  ✅ ${photoCount} exploration photos created`);
+
   console.log('🌱 Seed complete!');
   console.log(`\n📧 Login credentials:`);
   console.log(`   Professional: dra.uncal@selflove.com / ${PASSWORD}`);

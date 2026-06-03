@@ -47,16 +47,31 @@ export interface TreatmentRecord {
   photos?: { before?: string; after?: string };
 }
 
+// ─── Skin Evaluation ──────────────────────────────────────────────────────────
+// Shared between API, DB (JSON column), and the SkinEvaluationForm component.
+
+export interface SkinEvaluationData {
+  skinType: string;
+  skinCondition: string;
+  concerns: string[];
+  elasticity: 'excellent' | 'good' | 'fair' | 'poor';
+  hydrationLevel: number;
+  oilLevel: number;
+  sensitivityLevel: 'none' | 'mild' | 'moderate' | 'severe';
+  notes: string;
+}
+
 export interface PhysicalExploration {
   id: string;
   patientId: string;
+  professionalId: string;
   date: Date;
-  skinType: string;
-  skinCondition: string;
-  facialAnalysis: FacialAnalysis;
-  bodyAnalysis?: BodyAnalysis;
-  notes: string;
+  skinEvaluation?: SkinEvaluationData;
+  facialAnalysis?: FacialAnalysis;
+  notes?: string;
   photos: ExplorationPhoto[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface FacialAnalysis {
@@ -85,9 +100,47 @@ export interface AreaAnalysis {
 
 export interface ExplorationPhoto {
   id: string;
+  explorationId?: string;
   url: string;
   angle: 'front' | 'left' | 'right' | 'up' | 'down';
+  originalName?: string;
+  mimeType?: string;
+  fileSize?: number;
   date: Date;
+}
+
+/**
+ * Response shape from GET /api/patients/[id]/clinical-history
+ */
+export interface ClinicalHistoryResponse {
+  patient: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    avatar: string | null;
+    dateOfBirth: string | null;
+    gender: string | null;
+    totalVisits: number;
+    lastVisit: string | null;
+  };
+  medicalHistory: MedicalHistory | null;
+  completedAppointments: Array<{
+    id: string;
+    treatmentType: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    notes: string | null;
+  }>;
+  explorations: Array<{
+    id: string;
+    date: string;
+    skinEvaluation: unknown;
+    facialAnalysis: unknown;
+    notes: string | null;
+    photos: ExplorationPhoto[];
+  }>;
 }
 
 export interface TimeSlot {

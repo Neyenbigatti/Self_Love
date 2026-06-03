@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth-context'
 import { useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/dashboard/sidebar'
 import { Header } from '@/components/dashboard/header'
+import { Toaster } from '@/components/ui/sonner'
 import { cn } from '@/lib/utils'
 
 export default function DashboardLayout({
@@ -79,6 +80,7 @@ export default function DashboardLayout({
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {children}
         </main>
+        <Toaster richColors />
       </div>
     </div>
   )

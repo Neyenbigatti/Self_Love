@@ -19,7 +19,7 @@ const primaryNav = [
   { label: 'Calendar',             href: '/dashboard/calendar',              icon: Calendar     },
   { label: 'Patients',             href: '/dashboard/patients',              icon: Users        },
   { label: 'Clinical History',     href: '/dashboard/clinical-history',      icon: ClipboardList },
-  { label: 'Physical Exploration', href: '/dashboard/physical-exploration',  icon: Stethoscope  },
+  { label: 'Physical Exploration', href: '/dashboard/exploration',  icon: Stethoscope  },
 ]
 
 const secondaryNav = [

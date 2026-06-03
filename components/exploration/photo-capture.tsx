@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -64,11 +64,21 @@ const photoAngles: { id: PhotoAngle; label: string; icon: React.ReactNode }[] = 
 interface PhotoCaptureProps {
   photos: ExplorationPhoto[];
   onPhotosChange: (photos: ExplorationPhoto[]) => void;
+  initialData?: ExplorationPhoto[];
 }
 
-export function PhotoCapture({ photos, onPhotosChange }: PhotoCaptureProps) {
+export function PhotoCapture({ photos, onPhotosChange, initialData }: PhotoCaptureProps) {
   const [selectedAngle, setSelectedAngle] = useState<PhotoAngle>("front");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasInitialized = useRef(false);
+
+  // Merge initialData into photos on mount (for editing existing exploration)
+  useEffect(() => {
+    if (!hasInitialized.current && initialData && initialData.length > 0 && photos.length === 0) {
+      onPhotosChange(initialData);
+      hasInitialized.current = true;
+    }
+  }, [initialData, onPhotosChange, photos.length]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

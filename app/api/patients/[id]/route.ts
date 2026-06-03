@@ -1,12 +1,24 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { users, appointments } from '@/lib/db/schema';
+import { users, appointments, medicalHistories } from '@/lib/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { getSession } from '@/lib/auth';
 import { requireRole } from '@/lib/api/auth-guard';
 import { validate } from '@/lib/api/validators/common';
 import { updatePatientSchema } from '@/lib/api/validators/patients';
 import { serverError, notFound, forbidden } from '@/lib/api/errors';
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
+function parseJsonArray(value: string | null): string[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 // ─── GET /api/patients/[id] ──────────────────────────────────────────────────
 // Professional only: return single patient with computed totalVisits and lastVisit.
@@ -52,7 +64,23 @@ export async function GET(
       return notFound('Patient not found');
     }
 
-    return NextResponse.json({ patient });
+    // ── Fetch medical history (separate query, 1:1 or null) ─────────────────
+    const [medHistory] = await db
+      .select()
+      .from(medicalHistories)
+      .where(eq(medicalHistories.patientId, id))
+      .limit(1);
+
+    const medicalHistory = medHistory
+      ? {
+          allergies: parseJsonArray(medHistory.allergies),
+          medications: parseJsonArray(medHistory.medications),
+          conditions: parseJsonArray(medHistory.conditions),
+          previousTreatments: parseJsonArray(medHistory.previousTreatments),
+        }
+      : undefined;
+
+    return NextResponse.json({ patient, medicalHistory });
   } catch (error) {
     console.error('[patients] GET by id error:', error);
     return serverError(error);

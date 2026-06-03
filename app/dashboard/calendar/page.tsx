@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { addWeeks, subWeeks, parseISO, format } from 'date-fns';
+import { toast } from 'sonner';
 import { WeekView } from '@/components/calendar/week-view';
 import { MiniCalendar } from '@/components/calendar/mini-calendar';
 import { AppointmentDialog } from '@/components/calendar/appointment-dialog';
@@ -58,7 +59,6 @@ export default function CalendarPage() {
       delete body.id;
 
       if (data.id) {
-        // PATCH existing
         const res = await fetch(`/api/appointments/${data.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -67,10 +67,10 @@ export default function CalendarPage() {
         if (!res.ok) {
           const err = await res.json();
           console.error('Failed to update appointment:', err);
+          toast.error(err?.error || 'Failed to update appointment');
           return;
         }
       } else {
-        // POST new
         const res = await fetch('/api/appointments', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -79,6 +79,7 @@ export default function CalendarPage() {
         if (!res.ok) {
           const err = await res.json();
           console.error('Failed to create appointment:', err);
+          toast.error(err?.error || 'Failed to create appointment');
           return;
         }
       }
@@ -93,8 +94,10 @@ export default function CalendarPage() {
         }),
       ) as Appointment[];
       setAppointments(transformed);
+      toast.success(data.id ? 'Appointment updated' : 'Appointment created');
     } catch (err) {
       console.error('Failed to save appointment:', err);
+      toast.error('Failed to save appointment');
     }
   };
 
@@ -104,11 +107,14 @@ export default function CalendarPage() {
       if (!res.ok) {
         const err = await res.json();
         console.error('Failed to delete appointment:', err);
+        toast.error(err?.error || 'Failed to delete appointment');
         return;
       }
       setAppointments((prev) => prev.filter((apt) => apt.id !== id));
+      toast.success('Appointment deleted');
     } catch (err) {
       console.error('Failed to delete appointment:', err);
+      toast.error('Failed to delete appointment');
     }
   };
 

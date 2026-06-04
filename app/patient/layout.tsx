@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth-context'
 import { useRouter } from 'next/navigation'
 import { PatientSidebar } from '@/components/patient-portal/patient-sidebar'
 import { PatientTopbar } from '@/components/patient-portal/patient-topbar'
+import { WhatsAppFab } from '@/components/patient-portal/whatsapp-fab'
 
 export default function PatientLayout({
   children,
@@ -42,6 +43,7 @@ export default function PatientLayout({
           isMenuOpen={sidebarOpen}
         />
         <main className="flex-1 p-4 sm:p-6">{children}</main>
+        <WhatsAppFab />
       </div>
     </div>
   )

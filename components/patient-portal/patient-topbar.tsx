@@ -21,7 +21,7 @@ interface PatientTopbarProps {
 }
 
 const pageTitles: Record<string, string> = {
-  "/patient": "Dashboard",
+  "/patient": "Inicio",
   "/patient/history": "Historial",
   "/patient/book": "Reservar Turno",
 };
@@ -34,7 +34,7 @@ export function PatientTopbar({ onMenuToggle, isMenuOpen }: PatientTopbarProps) 
   const pageTitle =
     Object.entries(pageTitles).find(([path]) =>
       path === "/patient" ? pathname === "/patient" : pathname.startsWith(path),
-    )?.[1] ?? "Dashboard";
+    )?.[1] ?? "Inicio";
 
   const patientName = user?.name ?? "";
   const patientAvatar = user?.avatar ?? undefined;

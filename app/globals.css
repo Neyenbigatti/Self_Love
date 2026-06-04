@@ -44,6 +44,7 @@
   --brand-sage: #B5CBBB;
   --brand-sage-dark: #8DAD99;
   --brand-sage-light: #E0EDE4;
+  --brand-sage-btn: #4A7A5C;
   --brand-warm-amber: #F0D7A8;
   --brand-warm-amber-dark: #D4B888;
   --brand-warm-gray: #9E9792;
@@ -132,6 +133,7 @@
   --color-brand-sage: var(--brand-sage);
   --color-brand-sage-dark: var(--brand-sage-dark);
   --color-brand-sage-light: var(--brand-sage-light);
+  --color-brand-sage-btn: var(--brand-sage-btn);
   --color-brand-warm-amber: var(--brand-warm-amber);
   --color-brand-warm-amber-dark: var(--brand-warm-amber-dark);
   --color-brand-warm-gray: var(--brand-warm-gray);

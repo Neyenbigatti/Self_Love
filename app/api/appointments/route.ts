@@ -147,7 +147,7 @@ export async function POST(request: Request) {
       .limit(1);
 
     if (overlap) {
-      return conflict('Time slot overlaps with an existing appointment');
+      return conflict('El horario seleccionado coincide con una reserva existente.');
     }
 
     // ── Insert ──────────────────────────────────────────────────────────────

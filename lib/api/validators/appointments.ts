@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { dateStringSchema, timeStringSchema, uuidSchema } from './common';
 import { addDays, isBefore, isAfter, startOfDay } from 'date-fns';
+import { BOOKING_WINDOW_DAYS } from '@/lib/constants';
 
 export const createAppointmentSchema = z
   .object({
@@ -26,10 +27,10 @@ export const createAppointmentSchema = z
   .refine(
     (data) => {
       const date = new Date(data.date + 'T12:00:00');
-      const maxDate = addDays(startOfDay(new Date()), 30);
+      const maxDate = addDays(startOfDay(new Date()), BOOKING_WINDOW_DAYS);
       return !isAfter(date, maxDate);
     },
-    { message: 'Solo se puede reservar hasta 30 días antes', path: ['date'] },
+    { message: `Solo se puede reservar hasta ${BOOKING_WINDOW_DAYS} días antes`, path: ['date'] },
   );
 
 export const updateAppointmentSchema = z
@@ -56,10 +57,10 @@ export const updateAppointmentSchema = z
     (data) => {
       if (!data.date) return true;
       const date = new Date(data.date + 'T12:00:00');
-      const maxDate = addDays(startOfDay(new Date()), 30);
+      const maxDate = addDays(startOfDay(new Date()), BOOKING_WINDOW_DAYS);
       return !isAfter(date, maxDate);
     },
-    { message: 'Solo se puede reservar hasta 30 días antes', path: ['date'] },
+    { message: `Solo se puede reservar hasta ${BOOKING_WINDOW_DAYS} días antes`, path: ['date'] },
   );
 
 export const queryAppointmentsSchema = z.object({

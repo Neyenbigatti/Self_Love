@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { Calendar, Clock, MessageCircle, Upload, MapPin, XCircle } from "lucide-react";
+import { Calendar, Clock, Upload, MapPin, XCircle } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,6 @@ import type { Appointment } from "@/lib/types";
 interface AppointmentCardProps {
   appointment: Appointment;
   variant?: "upcoming" | "history";
-  onContactWhatsApp?: () => void;
   onSendPayment?: () => void;
   onCancel?: (id: string) => void;
 }
@@ -31,29 +30,28 @@ const statusConfig = {
   confirmed: {
     label: "Confirmado",
     variant: "default" as const,
-    className: "bg-brand-sage-light text-brand-sage-dark hover:bg-brand-sage-light",
+    className: "bg-brand-sage-light text-green-800 hover:bg-brand-sage-light",
   },
   pending: {
     label: "Pendiente de Pago",
     variant: "secondary" as const,
-    className: "bg-brand-warm-amber text-brand-warm-amber-dark hover:bg-brand-warm-amber",
+    className: "bg-brand-warm-amber text-amber-800 hover:bg-brand-warm-amber",
   },
   cancelled: {
     label: "Cancelado",
     variant: "secondary" as const,
-    className: "bg-muted text-muted-foreground hover:bg-muted",
+    className: "bg-brand-warm-gray/20 text-gray-600 hover:bg-brand-warm-gray/30",
   },
   completed: {
     label: "Completado",
     variant: "secondary" as const,
-    className: "bg-brand-sage-light text-brand-sage-dark hover:bg-brand-sage-light",
+    className: "bg-sky-50 text-sky-700 hover:bg-sky-100",
   },
 };
 
 export function AppointmentCard({
   appointment,
   variant = "upcoming",
-  onContactWhatsApp,
   onSendPayment,
   onCancel,
 }: AppointmentCardProps) {
@@ -132,16 +130,6 @@ export function AppointmentCard({
 
       {isUpcoming && (
         <CardFooter className="flex flex-wrap gap-2 border-t border-brand-warm-border pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 sm:flex-none"
-            onClick={onContactWhatsApp}
-          >
-            <MessageCircle className="mr-2 size-4" />
-            Contactar por WhatsApp
-          </Button>
-          
           {isPending && (
             <Button
               size="sm"
@@ -176,7 +164,7 @@ export function AppointmentCard({
                   <AlertDialogCancel>Mantener Turno</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() => onCancel(appointment.id)}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="bg-brand-rose text-[#6B3B3B] hover:bg-brand-rose/90"
                   >
                     Sí, Cancelar
                   </AlertDialogAction>

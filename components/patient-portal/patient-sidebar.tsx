@@ -19,7 +19,7 @@ interface PatientSidebarProps {
 }
 
 const navItems = [
-  { href: "/patient", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/patient", label: "Inicio", icon: LayoutDashboard },
   { href: "/patient/history", label: "Historial", icon: CalendarClock },
   { href: "/patient/book", label: "Reservar Turno", icon: CalendarPlus },
 ];

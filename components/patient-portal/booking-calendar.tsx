@@ -23,6 +23,7 @@ import { ChevronLeft, ChevronRight, Check, RefreshCw, Calendar } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { BOOKING_WINDOW_DAYS } from "@/lib/constants";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -56,7 +57,7 @@ export function BookingCalendar({
   selectedTime,
 }: BookingCalendarProps) {
   const today = useMemo(() => startOfDay(new Date()), []);
-  const maxDate = useMemo(() => addDays(today, 30), [today]);
+  const maxDate = useMemo(() => addDays(today, BOOKING_WINDOW_DAYS), [today]);
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(today));

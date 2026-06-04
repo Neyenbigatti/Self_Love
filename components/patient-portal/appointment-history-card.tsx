@@ -14,19 +14,19 @@ interface AppointmentHistoryCardProps {
 const statusStyles: Record<string, { label: string; className: string }> = {
   completed: {
     label: "Completado",
-    className: "bg-brand-sage-light text-brand-sage-dark",
+    className: "bg-sky-50 text-sky-700",
   },
   cancelled: {
     label: "Cancelado",
-    className: "bg-brand-rose-light text-brand-rose-dark",
+    className: "bg-brand-warm-gray/20 text-gray-600",
   },
   pending: {
     label: "Pendiente",
-    className: "bg-brand-warm-amber text-brand-warm-amber-dark",
+    className: "bg-brand-warm-amber text-amber-800",
   },
   confirmed: {
     label: "Confirmado",
-    className: "bg-brand-sage-light text-brand-sage-dark",
+    className: "bg-brand-sage-light text-green-800",
   },
 };
 

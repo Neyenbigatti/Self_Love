@@ -342,7 +342,7 @@ export default function BookAppointmentPage() {
           {step === 'confirm' && 'Confirmar Turno'}
         </h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Booking with <span className="font-medium text-foreground">{selectedProfessional.name}</span>
+          Reservando con <span className="font-medium text-foreground">{selectedProfessional.name}</span>
           {selectedProfessional.clinicName && <> &middot; {selectedProfessional.clinicName}</>}
         </p>
       </div>

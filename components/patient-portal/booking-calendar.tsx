@@ -1,11 +1,30 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { format, addDays, isSameDay, startOfWeek, isAfter, isBefore } from "date-fns";
-import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  addDays,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  format,
+  isSameDay,
+  isSameMonth,
+  isBefore,
+  isAfter,
+  startOfDay,
+  isToday,
+  eachDayOfInterval,
+} from "date-fns";
+import { es } from "date-fns/locale";
+import { ChevronLeft, ChevronRight, Check, RefreshCw, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface BookingCalendarProps {
   professionalId: string;
@@ -14,10 +33,21 @@ interface BookingCalendarProps {
   selectedTime?: string;
 }
 
-interface DaySlots {
-  date: string; // YYYY-MM-DD
-  slots: { time: string; available: boolean }[];
+interface SlotInfo {
+  time: string;
+  available: boolean;
 }
+
+interface DaySlots {
+  date: string;
+  slots: SlotInfo[];
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const DAY_NAMES = ["LU", "MA", "MI", "JU", "VI", "SA", "DO"];
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function BookingCalendar({
   professionalId,
@@ -25,209 +55,327 @@ export function BookingCalendar({
   selectedDate,
   selectedTime,
 }: BookingCalendarProps) {
-  const today = new Date();
-  const [weekStart, setWeekStart] = useState(startOfWeek(today, { weekStartsOn: 1 }));
-  const [hoveredSlot, setHoveredSlot] = useState<{ date: Date; time: string } | null>(null);
-  const [daysMap, setDaysMap] = useState<Map<string, DaySlots>>(new Map());
-  const [loading, setLoading] = useState(true);
+  const today = useMemo(() => startOfDay(new Date()), []);
+  const maxDate = useMemo(() => addDays(today, 30), [today]);
 
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-
-  // ── Fetch slots for the entire visible week ──────────────────────────────
-  const fetchWeekSlots = useCallback(async (start: Date, profId: string) => {
-    setLoading(true);
-    const results = await Promise.all(
-      Array.from({ length: 7 }, async (_, i) => {
-        const day = addDays(start, i);
-        const dateStr = format(day, "yyyy-MM-dd");
-        try {
-          const res = await fetch(
-            `/api/availability/slots?date=${dateStr}&professionalId=${profId}`,
-          );
-          if (!res.ok) return { date: dateStr, slots: [] };
-          const data = await res.json();
-          return { date: dateStr, slots: data.slots ?? [] } as DaySlots;
-        } catch {
-          return { date: dateStr, slots: [] };
-        }
-      }),
-    );
-
-    const map = new Map<string, DaySlots>();
-    for (const day of results) {
-      map.set(day.date, day);
+  // ── State ──────────────────────────────────────────────────────────────────
+  const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(today));
+  const [activeDate, setActiveDate] = useState<Date>(() => {
+    if (selectedDate && !isBefore(selectedDate, today) && !isAfter(selectedDate, maxDate)) {
+      return selectedDate;
     }
-    setDaysMap(map);
-    setLoading(false);
+    return today;
+  });
+  const [daysMap, setDaysMap] = useState<Map<string, DaySlots>>(new Map());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const activeDateStr = format(activeDate, "yyyy-MM-dd");
+
+  // ── Locally-synced activeDate when selectedDate prop changes externally ────
+  useEffect(() => {
+    if (selectedDate && !isSameDay(selectedDate, activeDate)) {
+      const isInRange = !isBefore(selectedDate, today) && !isAfter(selectedDate, maxDate);
+      if (isInRange) setActiveDate(selectedDate);
+    }
+  }, [selectedDate, activeDate, today, maxDate]);
+
+  // ── Calendar grid ──────────────────────────────────────────────────────────
+  const calendarDays = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    return eachDayOfInterval({ start: calStart, end: calEnd });
+  }, [currentMonth]);
+
+  // ── Navigation limits ──────────────────────────────────────────────────────
+  const canGoPrev = useMemo(
+    () => isAfter(startOfMonth(currentMonth), startOfMonth(today)),
+    [currentMonth, today],
+  );
+
+  const canGoNext = useMemo(
+    () => isBefore(endOfMonth(currentMonth), maxDate),
+    [currentMonth, maxDate],
+  );
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  const isDayDisabled = useCallback(
+    (day: Date) => isBefore(day, today) || isAfter(day, maxDate),
+    [today, maxDate],
+  );
+
+  const isDaySelected = useCallback(
+    (day: Date) => isSameDay(day, activeDate),
+    [activeDate],
+  );
+
+  // ── Fetch slots for a specific date ────────────────────────────────────────
+  const fetchSlotsForDate = useCallback(
+    async (dateStr: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(
+          `/api/availability/slots?date=${dateStr}&professionalId=${professionalId}`,
+        );
+        if (!res.ok) throw new Error("Error al cargar disponibilidad");
+        const data = await res.json();
+        const daySlots: DaySlots = {
+          date: dateStr,
+          slots: data.slots ?? [],
+        };
+        setDaysMap((prev) => {
+          const next = new Map(prev);
+          next.set(dateStr, daySlots);
+          return next;
+        });
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Error al cargar horarios",
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [professionalId],
+  );
+
+  // ── Fetch active date's slots when it changes (or on mount) ───────────────
+  useEffect(() => {
+    if (!daysMap.has(activeDateStr)) {
+      fetchSlotsForDate(activeDateStr);
+    }
+  }, [activeDateStr, fetchSlotsForDate, daysMap]);
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
+  const handleDayClick = useCallback(
+    (day: Date) => {
+      if (isDayDisabled(day)) return;
+      if (!isSameMonth(day, currentMonth)) return;
+      const isNewDay = !isSameDay(day, activeDate);
+      setActiveDate(day);
+      // Clear time selection when switching to a different date
+      if (isNewDay) {
+        onSlotSelect(day, "");
+      }
+    },
+    [isDayDisabled, currentMonth, activeDate, onSlotSelect],
+  );
+
+  const handlePrevMonth = useCallback(() => {
+    setCurrentMonth((prev) => subMonths(prev, 1));
   }, []);
 
-  // Refetch when professional or week changes
-  useEffect(() => {
-    fetchWeekSlots(weekStart, professionalId);
-  }, [weekStart, professionalId, fetchWeekSlots]);
+  const handleNextMonth = useCallback(() => {
+    setCurrentMonth((prev) => addMonths(prev, 1));
+  }, []);
 
-  const navigateWeek = (direction: "prev" | "next") => {
-    setWeekStart((prev) =>
-      direction === "next" ? addDays(prev, 7) : addDays(prev, -7),
-    );
-  };
+  const handleRetry = useCallback(() => {
+    fetchSlotsForDate(activeDateStr);
+  }, [fetchSlotsForDate, activeDateStr]);
 
-  const canGoBack = isAfter(weekStart, today);
+  // ── Derive active slots from cache ─────────────────────────────────────────
+  const activeSlots = useMemo(() => {
+    const dayData = daysMap.get(activeDateStr);
+    if (!dayData) return [];
+    return dayData.slots.filter((s) => s.available);
+  }, [daysMap, activeDateStr]);
 
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <Card>
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Seleccioná Fecha y Hora</CardTitle>
-          <div className="flex items-center gap-2">
+    <div className="grid gap-6 md:grid-cols-[1fr_1.5fr]">
+      {/* ── Left panel: Monthly Calendar ──────────────────────────────────── */}
+      <Card>
+        <CardContent className="p-4">
+          {/* Month navigation */}
+          <div className="mb-4 flex items-center justify-between">
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
-              onClick={() => navigateWeek("prev")}
-              disabled={!canGoBack || loading}
+              onClick={handlePrevMonth}
+              disabled={!canGoPrev}
+              className="size-8"
             >
               <ChevronLeft className="size-4" />
-              <span className="sr-only">Semana anterior</span>
+              <span className="sr-only">Mes anterior</span>
             </Button>
-            <span className="min-w-[140px] text-center text-sm font-medium">
-              {format(weekStart, "MMM d")} - {format(addDays(weekStart, 6), "MMM d, yyyy")}
-            </span>
+            <h3 className="text-sm font-semibold capitalize">
+              {format(currentMonth, "MMMM yyyy", { locale: es })}
+            </h3>
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
-              onClick={() => navigateWeek("next")}
-              disabled={loading}
+              onClick={handleNextMonth}
+              disabled={!canGoNext}
+              className="size-8"
             >
               <ChevronRight className="size-4" />
-              <span className="sr-only">Semana siguiente</span>
+              <span className="sr-only">Mes siguiente</span>
             </Button>
           </div>
-        </div>
-      </CardHeader>
 
-      <CardContent>
-        {/* Days Header */}
-        <div className="mb-4 grid grid-cols-7 gap-2">
-          {weekDays.map((day) => {
-            const isPast = isBefore(day, today) && !isSameDay(day, today);
-            const isSelected = selectedDate && isSameDay(day, selectedDate);
-            const isToday = isSameDay(day, today);
-
-            return (
+          {/* Day name headers */}
+          <div className="mb-1 grid grid-cols-7">
+            {DAY_NAMES.map((name) => (
               <div
-                key={day.toISOString()}
-                className={cn(
-                  "flex flex-col items-center rounded-lg p-2 text-center transition-colors",
-                  isPast && "opacity-40",
-                  isSelected && "bg-accent text-accent-foreground",
-                  isToday && !isSelected && "bg-secondary",
-                )}
+                key={name}
+                className="py-1 text-center text-xs font-medium text-muted-foreground"
               >
-                <span className="text-xs font-medium uppercase tracking-wide">
-                  {format(day, "EEE")}
-                </span>
-                <span
-                  className={cn(
-                    "mt-1 text-lg font-semibold",
-                    isSelected ? "text-accent-foreground" : "text-foreground",
-                  )}
-                >
-                  {format(day, "d")}
-                </span>
+                {name}
               </div>
-            );
-          })}
-        </div>
-
-        {/* Time Slots Grid */}
-        {loading ? (
-          <div className="flex h-40 items-center justify-center">
-            <div className="animate-pulse text-sm text-muted-foreground">
-              Cargando disponibilidad...
-            </div>
+            ))}
           </div>
-        ) : (
-          <div className="grid grid-cols-7 gap-2">
-            {weekDays.map((day) => {
-              const dateStr = format(day, "yyyy-MM-dd");
-              const dayData = daysMap.get(dateStr);
-              const isPast = isBefore(day, today) && !isSameDay(day, today);
-              const availableSlots = isPast
-                ? []
-                : (dayData?.slots ?? []).filter((s) => !isPast);
+
+          {/* Day cells */}
+          <div className="grid grid-cols-7">
+            {calendarDays.map((day) => {
+              const inMonth = isSameMonth(day, currentMonth);
+              const disabled = isDayDisabled(day);
+              const active = isDaySelected(day);
+              const todayHighlight = isToday(day);
 
               return (
-                <div key={day.toISOString()} className="flex flex-col gap-1">
-                  {availableSlots.length > 0 ? (
-                    availableSlots.map((slot) => {
-                      const isSelected =
-                        selectedDate &&
-                        isSameDay(day, selectedDate) &&
-                        selectedTime === slot.time;
-                      const isHovered =
-                        hoveredSlot &&
-                        isSameDay(day, hoveredSlot.date) &&
-                        hoveredSlot.time === slot.time;
-
-                      if (!slot.available) {
-                        return (
-                          <div
-                            key={`${day.toISOString()}-${slot.time}`}
-                            className="flex items-center justify-center rounded-md px-1 py-1.5 text-xs font-medium text-muted-foreground/30 line-through"
-                          >
-                            {slot.time}
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <button
-                          key={`${day.toISOString()}-${slot.time}`}
-                          onClick={() => onSlotSelect(day, slot.time)}
-                          onMouseEnter={() =>
-                            setHoveredSlot({ date: day, time: slot.time })
-                          }
-                          onMouseLeave={() => setHoveredSlot(null)}
-                          className={cn(
-                            "flex items-center justify-center rounded-md px-1 py-1.5 text-xs font-medium transition-all",
-                            isSelected
-                              ? "bg-accent text-accent-foreground"
-                              : isHovered
-                              ? "bg-secondary text-foreground"
-                              : "bg-secondary/50 text-muted-foreground hover:bg-secondary",
-                          )}
-                        >
-                          {isSelected ? (
-                            <Check className="size-3" />
-                          ) : (
-                            slot.time
-                          )}
-                        </button>
-                      );
-                    })
-                  ) : (
-                    <div className="flex h-14 items-center justify-center">
-                      <span className="text-xs text-muted-foreground">
-                        {isPast ? "-" : "Sin horarios"}
-                      </span>
-                    </div>
+                <button
+                  key={day.toISOString()}
+                  type="button"
+                  onClick={() => handleDayClick(day)}
+                  disabled={disabled || !inMonth}
+                  className={cn(
+                    "relative h-9 w-full rounded-lg text-sm transition-colors",
+                    // Days from prev/next month — barely visible
+                    !inMonth && "text-muted-foreground/20",
+                    // Disabled days (past or beyond max) — tachado + opacidad
+                    disabled &&
+                      inMonth &&
+                      "cursor-not-allowed text-muted-foreground/30 bg-muted/30 line-through decoration-muted-foreground/20",
+                    // Active day (clicked by user) — immediate highlight
+                    active &&
+                      !disabled &&
+                      "bg-accent font-semibold text-accent-foreground",
+                    // Today indicator (only if not active)
+                    todayHighlight &&
+                      !active &&
+                      "border border-accent/50 font-medium",
+                    // Hover for clickable unselected days
+                    !disabled &&
+                      inMonth &&
+                      !active &&
+                      "cursor-pointer hover:bg-secondary",
+                    // Default text for in-month non-active days
+                    !active &&
+                      !todayHighlight &&
+                      !disabled &&
+                      inMonth &&
+                      "text-foreground",
                   )}
-                </div>
+                  aria-label={format(day, "EEEE d 'de' MMMM yyyy", {
+                    locale: es,
+                  })}
+                >
+                  {format(day, "d")}
+                </button>
               );
             })}
           </div>
-        )}
+        </CardContent>
+      </Card>
 
-        {/* Selected Summary */}
-        {selectedDate && selectedTime && (
-          <div className="mt-6 rounded-lg bg-accent/10 p-4">
-            <p className="text-sm font-medium text-foreground">Turno Seleccionado</p>
-            <p className="mt-1 text-lg font-semibold text-accent">
-              {format(selectedDate, "EEEE, d MMMM yyyy")} a las {selectedTime}
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {/* ── Right panel: Available slots ──────────────────────────────────── */}
+      <Card>
+        <CardContent className="p-4">
+          <h3 className="mb-4 text-sm font-semibold">
+            Horarios disponibles
+            {!isDayDisabled(activeDate) && (
+              <span className="font-normal text-muted-foreground">
+                {" "}
+                para el{" "}
+                {format(activeDate, "d 'de' MMMM", { locale: es })}
+              </span>
+            )}
+          </h3>
+
+          {/* Loading state */}
+          {loading && (
+            <div className="flex h-40 items-center justify-center">
+              <div className="animate-pulse text-sm text-muted-foreground">
+                Cargando disponibilidad...
+              </div>
+            </div>
+          )}
+
+          {/* Error state */}
+          {!loading && error && (
+            <div className="flex h-40 flex-col items-center justify-center gap-2">
+              <p className="text-sm text-destructive">{error}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRetry}
+              >
+                <RefreshCw className="mr-1 size-3" />
+                Reintentar
+              </Button>
+            </div>
+          )}
+
+          {/* Disabled day — no slots shown */}
+          {!loading && !error && isDayDisabled(activeDate) && (
+            <div className="flex h-40 items-center justify-center">
+              <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="size-8 opacity-40" />
+                <p>Fecha no disponible</p>
+              </div>
+            </div>
+          )}
+
+          {/* No slots available */}
+          {!loading &&
+            !error &&
+            !isDayDisabled(activeDate) &&
+            activeSlots.length === 0 && (
+              <div className="flex h-40 items-center justify-center">
+                <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="size-8 opacity-40" />
+                  <p>Sin horarios disponibles</p>
+                </div>
+              </div>
+            )}
+
+          {/* Slots grid */}
+          {!loading &&
+            !error &&
+            !isDayDisabled(activeDate) &&
+            activeSlots.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {activeSlots.map((slot) => {
+                  const isSlotSelected =
+                    selectedDate &&
+                    isSameDay(activeDate, selectedDate) &&
+                    selectedTime === slot.time;
+
+                  return (
+                    <button
+                      key={slot.time}
+                      type="button"
+                      onClick={() => onSlotSelect(activeDate, slot.time)}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-all",
+                        isSlotSelected
+                          ? "bg-accent text-accent-foreground ring-1 ring-accent"
+                          : "bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground",
+                      )}
+                    >
+                      {isSlotSelected && <Check className="size-3.5 shrink-0" />}
+                      {slot.time}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

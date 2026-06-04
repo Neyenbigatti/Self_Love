@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { dateStringSchema, timeStringSchema, uuidSchema } from './common';
+import { addDays, isBefore, isAfter, startOfDay } from 'date-fns';
 
 export const createAppointmentSchema = z
   .object({
@@ -13,18 +14,53 @@ export const createAppointmentSchema = z
   .refine(
     (data) => data.endTime > data.startTime,
     { message: 'endTime must be after startTime', path: ['endTime'] },
+  )
+  .refine(
+    (data) => {
+      const date = new Date(data.date + 'T12:00:00');
+      const today = startOfDay(new Date());
+      return !isBefore(date, today);
+    },
+    { message: 'La fecha debe ser hoy o posterior', path: ['date'] },
+  )
+  .refine(
+    (data) => {
+      const date = new Date(data.date + 'T12:00:00');
+      const maxDate = addDays(startOfDay(new Date()), 30);
+      return !isAfter(date, maxDate);
+    },
+    { message: 'Solo se puede reservar hasta 30 días antes', path: ['date'] },
   );
 
-export const updateAppointmentSchema = z.object({
-  status: z
-    .enum(['pending', 'confirmed', 'cancelled', 'completed'])
-    .optional(),
-  treatmentType: z.string().min(1).optional(),
-  date: dateStringSchema.optional(),
-  startTime: timeStringSchema.optional(),
-  endTime: timeStringSchema.optional(),
-  notes: z.string().optional(),
-});
+export const updateAppointmentSchema = z
+  .object({
+    status: z
+      .enum(['pending', 'confirmed', 'cancelled', 'completed'])
+      .optional(),
+    treatmentType: z.string().min(1).optional(),
+    date: dateStringSchema.optional(),
+    startTime: timeStringSchema.optional(),
+    endTime: timeStringSchema.optional(),
+    notes: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (!data.date) return true;
+      const date = new Date(data.date + 'T12:00:00');
+      const today = startOfDay(new Date());
+      return !isBefore(date, today);
+    },
+    { message: 'La fecha debe ser hoy o posterior', path: ['date'] },
+  )
+  .refine(
+    (data) => {
+      if (!data.date) return true;
+      const date = new Date(data.date + 'T12:00:00');
+      const maxDate = addDays(startOfDay(new Date()), 30);
+      return !isAfter(date, maxDate);
+    },
+    { message: 'Solo se puede reservar hasta 30 días antes', path: ['date'] },
+  );
 
 export const queryAppointmentsSchema = z.object({
   startDate: dateStringSchema.optional(),

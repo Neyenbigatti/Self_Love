@@ -31,12 +31,12 @@ const statusConfig = {
   confirmed: {
     label: "Confirmado",
     variant: "default" as const,
-    className: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
+    className: "bg-brand-sage-light text-brand-sage-dark hover:bg-brand-sage-light",
   },
   pending: {
     label: "Pendiente de Pago",
     variant: "secondary" as const,
-    className: "bg-amber-100 text-amber-700 hover:bg-amber-100",
+    className: "bg-brand-warm-amber text-brand-warm-amber-dark hover:bg-brand-warm-amber",
   },
   cancelled: {
     label: "Cancelado",
@@ -46,7 +46,7 @@ const statusConfig = {
   completed: {
     label: "Completado",
     variant: "secondary" as const,
-    className: "bg-secondary text-secondary-foreground hover:bg-secondary",
+    className: "bg-brand-sage-light text-brand-sage-dark hover:bg-brand-sage-light",
   },
 };
 
@@ -64,7 +64,7 @@ export function AppointmentCard({
 
   return (
     <Card className={cn(
-      "transition-all duration-200",
+      "border-brand-warm-border transition-all duration-200",
       appointment.status === "cancelled" && "opacity-60"
     )}>
       <CardHeader className="pb-3">
@@ -77,7 +77,7 @@ export function AppointmentCard({
               {appointment.professionalName || 'Profesional'}
             </p>
           </div>
-          <Badge className={cn("shrink-0", status.className)}>
+          <Badge className={cn("shrink-0 border-0", status.className)}>
             {status.label}
           </Badge>
         </div>
@@ -86,7 +86,7 @@ export function AppointmentCard({
       <CardContent className="pb-3">
         <div className="grid gap-3">
           <div className="flex items-center gap-3 text-sm">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-secondary">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-brand-rose-light">
               <Calendar className="size-4 text-muted-foreground" />
             </div>
             <div>
@@ -97,7 +97,7 @@ export function AppointmentCard({
           </div>
 
           <div className="flex items-center gap-3 text-sm">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-secondary">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-brand-rose-light">
               <Clock className="size-4 text-muted-foreground" />
             </div>
             <div>
@@ -108,7 +108,7 @@ export function AppointmentCard({
           </div>
 
           <div className="flex items-center gap-3 text-sm">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-secondary">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-brand-rose-light">
               <MapPin className="size-4 text-muted-foreground" />
             </div>
             <div>
@@ -131,7 +131,7 @@ export function AppointmentCard({
       </CardContent>
 
       {isUpcoming && (
-        <CardFooter className="flex flex-wrap gap-2 border-t pt-4">
+        <CardFooter className="flex flex-wrap gap-2 border-t border-brand-warm-border pt-4">
           <Button
             variant="outline"
             size="sm"
@@ -145,7 +145,7 @@ export function AppointmentCard({
           {isPending && (
             <Button
               size="sm"
-              className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 sm:flex-none"
+              className="flex-1 bg-brand-rose text-[#6B3B3B] hover:bg-brand-rose/90 sm:flex-none"
               onClick={onSendPayment}
             >
               <Upload className="mr-2 size-4" />

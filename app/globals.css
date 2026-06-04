@@ -38,6 +38,17 @@
   --sidebar-accent-foreground: oklch(0.22 0.015 240);
   --sidebar-border: oklch(0.905 0.006 240);
   --sidebar-ring: oklch(0.50 0.12 185);
+  --brand-rose: #F7CACA;
+  --brand-rose-dark: #D48787;
+  --brand-rose-light: #FCE7E7;
+  --brand-sage: #B5CBBB;
+  --brand-sage-dark: #8DAD99;
+  --brand-sage-light: #E0EDE4;
+  --brand-warm-amber: #F0D7A8;
+  --brand-warm-amber-dark: #D4B888;
+  --brand-warm-gray: #9E9792;
+  --brand-warm-bg: #FAFAF9;
+  --brand-warm-border: #E8E4E0;
 }
 
 .dark {
@@ -115,6 +126,17 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-brand-rose: var(--brand-rose);
+  --color-brand-rose-dark: var(--brand-rose-dark);
+  --color-brand-rose-light: var(--brand-rose-light);
+  --color-brand-sage: var(--brand-sage);
+  --color-brand-sage-dark: var(--brand-sage-dark);
+  --color-brand-sage-light: var(--brand-sage-light);
+  --color-brand-warm-amber: var(--brand-warm-amber);
+  --color-brand-warm-amber-dark: var(--brand-warm-amber-dark);
+  --color-brand-warm-gray: var(--brand-warm-gray);
+  --color-brand-warm-bg: var(--brand-warm-bg);
+  --color-brand-warm-border: var(--brand-warm-border);
 }
 
 @layer base {

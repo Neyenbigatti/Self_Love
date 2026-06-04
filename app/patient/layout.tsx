@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { useRouter } from 'next/navigation'
-import { PatientNavbar } from '@/components/patient-portal/patient-navbar'
+import { PatientSidebar } from '@/components/patient-portal/patient-sidebar'
+import { PatientTopbar } from '@/components/patient-portal/patient-topbar'
 
 export default function PatientLayout({
   children,
@@ -12,6 +13,7 @@ export default function PatientLayout({
 }) {
   const { user, isLoading } = useAuth()
   const router = useRouter()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Redirect non-patient users away
   useEffect(() => {
@@ -23,17 +25,24 @@ export default function PatientLayout({
   if (isLoading || !user || user.role !== 'patient') {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground text-sm">Cargando...</div>
+        <div className="animate-pulse text-sm text-muted-foreground">Cargando...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <PatientNavbar />
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        {children}
-      </main>
+    <div className="flex min-h-screen bg-brand-warm-bg">
+      <PatientSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
+      <div className="flex flex-1 flex-col md:pl-64">
+        <PatientTopbar
+          onMenuToggle={() => setSidebarOpen((prev) => !prev)}
+          isMenuOpen={sidebarOpen}
+        />
+        <main className="flex-1 p-4 sm:p-6">{children}</main>
+      </div>
     </div>
   )
 }

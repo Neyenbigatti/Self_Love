@@ -44,18 +44,18 @@ export function PatientList({
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="font-serif text-xl">Patients</CardTitle>
-            <CardDescription>{patients.length} registered</CardDescription>
+            <CardTitle className="font-serif text-xl">Pacientes</CardTitle>
+            <CardDescription>{patients.length} registrados</CardDescription>
           </div>
           <Button onClick={onNewPatient} size="sm">
             <Plus data-icon="inline-start" />
-            New
+            Nuevo
           </Button>
         </div>
         <div className="relative mt-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
           <Input
-            placeholder="Search patients..."
+            placeholder="Buscar pacientes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -86,7 +86,7 @@ export function PatientList({
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-medium truncate">{patient.name}</p>
                   <Badge variant="secondary" className="shrink-0">
-                    {patient.totalVisits} visits
+                    {patient.totalVisits} visitas
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
@@ -100,7 +100,7 @@ export function PatientList({
                 {patient.lastVisit && (
                   <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                     <Calendar className="size-3" />
-                    <span>Last visit: {format(patient.lastVisit, "MMM d, yyyy")}</span>
+                    <span>Última visita: {format(patient.lastVisit, "d MMM yyyy")}</span>
                   </div>
                 )}
               </div>
@@ -108,7 +108,7 @@ export function PatientList({
           ))}
           {filteredPatients.length === 0 && (
             <div className="p-8 text-center text-muted-foreground">
-              No patients found
+              No se encontraron pacientes
             </div>
           )}
         </div>

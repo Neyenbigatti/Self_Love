@@ -31,10 +31,10 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   
   const validate = (): FormErrors => {
     const errs: FormErrors = {}
-    if (!email) errs.email = "Email is required"
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "Enter a valid email address"
-    if (!password) errs.password = "Password is required"
-    else if (password.length < 6) errs.password = "Password must be at least 6 characters"
+    if (!email) errs.email = "El email es obligatorio"
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "Ingresá un email válido"
+    if (!password) errs.password = "La contraseña es obligatoria"
+    else if (password.length < 6) errs.password = "La contraseña debe tener al menos 6 caracteres"
     return errs
   }
   
@@ -56,7 +56,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       const user = await login(email, password)
       router.push(user.role === 'professional' ? '/dashboard' : '/patient')
     } catch (err) {
-      setApiError(err instanceof Error ? err.message : 'Login failed')
+      setApiError(err instanceof Error ? err.message : 'Error al iniciar sesión')
     } finally {
       setIsLoading(false)
     }
@@ -77,12 +77,12 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       {/* Email */}
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="email" className="text-sm font-medium text-foreground">
-          Email Address
+          Correo Electrónico
         </Label>
         <Input
           id="email"
           type="email"
-          placeholder="you@example.com"
+          placeholder="tu@ejemplo.com"
           value={email}
           onChange={(e) => {
             setEmail(e.target.value)
@@ -111,19 +111,19 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between">
           <Label htmlFor="password" className="text-sm font-medium text-foreground">
-            Password
+            Contraseña
           </Label>
           <button
             type="button"
             className="text-xs text-accent hover:text-accent/80 transition-colors focus-visible:outline-none focus-visible:underline"
           >
-            Forgot password?
+            ¿Olvidaste tu contraseña?
           </button>
         </div>
         <Input
           id="password"
           type="password"
-          placeholder="Enter your password"
+          placeholder="Ingresá tu contraseña"
           value={password}
           onChange={(e) => {
             setPassword(e.target.value)
@@ -160,7 +160,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           htmlFor="remember"
           className="text-sm text-muted-foreground cursor-pointer font-normal select-none"
         >
-          Remember me for 30 days
+          Recordarme por 30 días
         </Label>
       </div>
  
@@ -176,10 +176,10 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            Signing in…
+            Iniciando sesión…
           </span>
         ) : (
-          "Sign In"
+          "Iniciar Sesión"
         )}
       </Button>
  
@@ -189,7 +189,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           <div className="w-full border-t border-border/50" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-card px-3 text-muted-foreground">New to SelfLove?</span>
+          <span className="bg-card px-3 text-muted-foreground">¿Nuevo en SelfLove?</span>
         </div>
       </div>
  
@@ -198,7 +198,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         onClick={onSwitchToRegister}
         className="w-full text-sm text-accent hover:text-accent/80 font-medium transition-colors focus-visible:outline-none focus-visible:underline"
       >
-        Create an account
+        Crear una cuenta
       </button>
     </form>
   )

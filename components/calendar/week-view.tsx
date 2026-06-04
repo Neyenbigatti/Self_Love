@@ -93,7 +93,7 @@ export function WeekView({
         </div>
         <Button onClick={onNewAppointment} className="gap-2">
           <Plus data-icon="inline-start" />
-          New Appointment
+          Nuevo Turno
         </Button>
       </div>
 

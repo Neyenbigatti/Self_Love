@@ -30,7 +30,7 @@ export function WeeklySchedule({ schedule }: WeeklyScheduleProps) {
   return (
     <div className="rounded-xl border border-border bg-card shadow-sm">
       <div className="border-b border-border px-6 py-4">
-        <h3 className="text-lg font-semibold text-foreground">Weekly Schedule</h3>
+        <h3 className="text-lg font-semibold text-foreground">Agenda Semanal</h3>
       </div>
       <div className="grid grid-cols-5 divide-x divide-border">
         {schedule.map((day) => (

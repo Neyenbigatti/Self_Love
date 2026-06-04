@@ -65,20 +65,32 @@ export async function GET(
     }
 
     // ── Fetch medical history (separate query, 1:1 or null) ─────────────────
-    const [medHistory] = await db
-      .select()
-      .from(medicalHistories)
-      .where(eq(medicalHistories.patientId, id))
-      .limit(1);
+    // Gracefully handle missing table — return undefined instead of crashing.
+    let medicalHistory: {
+      allergies: string[];
+      medications: string[];
+      conditions: string[];
+      previousTreatments: string[];
+    } | undefined;
 
-    const medicalHistory = medHistory
-      ? {
+    try {
+      const [medHistory] = await db
+        .select()
+        .from(medicalHistories)
+        .where(eq(medicalHistories.patientId, id))
+        .limit(1);
+
+      if (medHistory) {
+        medicalHistory = {
           allergies: parseJsonArray(medHistory.allergies),
           medications: parseJsonArray(medHistory.medications),
           conditions: parseJsonArray(medHistory.conditions),
           previousTreatments: parseJsonArray(medHistory.previousTreatments),
-        }
-      : undefined;
+        };
+      }
+    } catch (_e) {
+      console.warn('[patients] medical_histories table not available — returning undefined');
+    }
 
     return NextResponse.json({ patient, medicalHistory });
   } catch (error) {

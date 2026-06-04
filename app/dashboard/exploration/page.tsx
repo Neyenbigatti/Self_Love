@@ -249,7 +249,7 @@ export default function PhysicalExplorationPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-serif font-semibold text-foreground">
-            Physical Exploration
+            Exploración Física
           </h1>
           <p className="text-muted-foreground mt-1">
             No se pudieron cargar los pacientes
@@ -281,10 +281,10 @@ export default function PhysicalExplorationPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-serif font-semibold text-foreground">
-            Physical Exploration
+            Exploración Física
           </h1>
           <p className="text-muted-foreground mt-1">
-            Document comprehensive skin analysis and facial evaluation
+            Documentá el análisis completo de piel y evaluación facial
           </p>
         </div>
         <Button
@@ -297,14 +297,14 @@ export default function PhysicalExplorationPage() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Saving...
+              Guardando...
             </>
           ) : (
             <>
               <svg className="size-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              {explorationId ? "Update Exploration" : "Save Exploration"}
+              {explorationId ? "Actualizar Exploración" : "Guardar Exploración"}
             </>
           )}
         </Button>
@@ -313,8 +313,8 @@ export default function PhysicalExplorationPage() {
       {/* Patient Selection */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Patient Selection</CardTitle>
-          <CardDescription>Select a patient to begin the physical exploration</CardDescription>
+          <CardTitle className="text-lg">Selección de Paciente</CardTitle>
+          <CardDescription>Seleccioná un paciente para comenzar la exploración física</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
@@ -326,7 +326,7 @@ export default function PhysicalExplorationPage() {
               }}
             >
               <SelectTrigger className="md:w-80">
-                <SelectValue placeholder="Select a patient" />
+                <SelectValue placeholder="Seleccionar paciente" />
               </SelectTrigger>
               <SelectContent>
                 {patients.map((patient) => (
@@ -355,9 +355,9 @@ export default function PhysicalExplorationPage() {
                   <p className="font-medium truncate">{selectedPatient.name}</p>
                   <p className="text-sm text-muted-foreground">
                     {selectedPatient.dateOfBirth && (
-                      <>DOB: {format(selectedPatient.dateOfBirth, "MMM d, yyyy")} &bull; </>
+                      <>FN: {format(selectedPatient.dateOfBirth, "d MMM yyyy")} &bull; </>
                     )}
-                    {selectedPatient.totalVisits} visits
+                    {selectedPatient.totalVisits} visitas
                   </p>
                 </div>
               </div>
@@ -375,9 +375,9 @@ export default function PhysicalExplorationPage() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              <h3 className="text-lg font-medium">Loading Exploration</h3>
+              <h3 className="text-lg font-medium">Cargando Exploración</h3>
               <p className="text-muted-foreground mt-1">
-                Loading existing data for this patient...
+                Cargando datos existentes...
               </p>
             </CardContent>
           </Card>
@@ -387,18 +387,18 @@ export default function PhysicalExplorationPage() {
               <svg className="size-12 text-muted-foreground mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <h3 className="text-lg font-medium">Could not load existing data</h3>
+              <h3 className="text-lg font-medium">No se pudieron cargar datos existentes</h3>
               <p className="text-muted-foreground mt-1 max-w-md">
-                You can still create a new exploration.
+                Podés crear una nueva exploración igualmente.
               </p>
             </CardContent>
           </Card>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="skin">Skin Evaluation</TabsTrigger>
-              <TabsTrigger value="facial">Facial Analysis</TabsTrigger>
-              <TabsTrigger value="photos">Photo Documentation</TabsTrigger>
+              <TabsTrigger value="skin">Evaluación de Piel</TabsTrigger>
+              <TabsTrigger value="facial">Análisis Facial</TabsTrigger>
+              <TabsTrigger value="photos">Documentación Fotográfica</TabsTrigger>
             </TabsList>
 
             <TabsContent value="skin" className="mt-6">
@@ -432,9 +432,9 @@ export default function PhysicalExplorationPage() {
             <svg className="size-16 text-muted-foreground mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <h3 className="text-lg font-medium">No Patient Selected</h3>
+            <h3 className="text-lg font-medium">Ningún Paciente Seleccionado</h3>
             <p className="text-muted-foreground mt-1 max-w-md">
-              Please select a patient from the dropdown above to begin documenting their physical exploration.
+              Seleccioná un paciente del menú desplegable para comenzar.
             </p>
           </CardContent>
         </Card>

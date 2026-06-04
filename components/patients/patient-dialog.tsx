@@ -126,7 +126,7 @@ export function PatientDialog({
         setNotes("");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Algo salió mal");
     } finally {
       setLoading(false);
     }
@@ -137,12 +137,12 @@ export function PatientDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="font-serif">
-            {isEditing ? "Edit Patient" : "New Patient"}
+            {isEditing ? "Editar Paciente" : "Nuevo Paciente"}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Update patient information"
-              : "Add a new patient to your records"}
+              ? "Actualizar información del paciente"
+              : "Agregar un nuevo paciente"}
           </DialogDescription>
         </DialogHeader>
 
@@ -156,13 +156,13 @@ export function PatientDialog({
 
           <div className="flex flex-col gap-2">
             <label htmlFor="name" className="text-sm font-medium">
-              Full Name *
+              Nombre Completo *
             </label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter patient name"
+              placeholder="Nombre del paciente"
               required
             />
           </div>
@@ -170,26 +170,26 @@ export function PatientDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <label htmlFor="email" className="text-sm font-medium">
-                Email *
+                Correo Electrónico *
               </label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@example.com"
+                placeholder="paciente@ejemplo.com"
                 required
               />
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="phone" className="text-sm font-medium">
-                Phone *
+                Teléfono *
               </label>
               <Input
                 id="phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 234 567 890"
+                placeholder="+54 11 1234-5678"
                 required
               />
             </div>
@@ -197,7 +197,7 @@ export function PatientDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Date of Birth</label>
+              <label className="text-sm font-medium">Fecha de Nacimiento</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -208,7 +208,7 @@ export function PatientDialog({
                     )}
                   >
                     <CalendarIcon className="mr-2 size-4" />
-                    {dateOfBirth ? format(dateOfBirth, "PPP") : "Select date"}
+                    {dateOfBirth ? format(dateOfBirth, "PPP") : "Seleccionar fecha"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -221,15 +221,15 @@ export function PatientDialog({
               </Popover>
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Gender</label>
+              <label className="text-sm font-medium">Género</label>
               <Select value={gender} onValueChange={setGender}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select gender" />
+                  <SelectValue placeholder="Seleccionar género" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="female">Femenino</SelectItem>
+                  <SelectItem value="male">Masculino</SelectItem>
+                  <SelectItem value="other">Otro</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -237,25 +237,25 @@ export function PatientDialog({
 
           <div className="flex flex-col gap-2">
             <label htmlFor="address" className="text-sm font-medium">
-              Address
+              Dirección
             </label>
             <Input
               id="address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="Enter address"
+              placeholder="Dirección"
             />
           </div>
 
           <div className="flex flex-col gap-2">
             <label htmlFor="notes" className="text-sm font-medium">
-              Notes
+              Notas
             </label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Additional notes about the patient..."
+              placeholder="Notas adicionales sobre el paciente..."
               rows={3}
             />
           </div>
@@ -267,11 +267,11 @@ export function PatientDialog({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancel
+              Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
-              {isEditing ? "Save Changes" : "Add Patient"}
+              {isEditing ? "Guardar Cambios" : "Agregar Paciente"}
             </Button>
           </DialogFooter>
         </form>

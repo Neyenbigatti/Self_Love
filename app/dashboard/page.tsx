@@ -326,13 +326,13 @@ export default function DashboardPage() {
         <div className="flex items-end justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-accent mb-1">
-              Overview
+              Resumen
             </p>
             <h1 className="font-serif text-2xl font-semibold text-foreground lg:text-3xl leading-tight">
-              Dashboard
+              Inicio
             </h1>
             <p className="mt-1.5 text-sm text-muted-foreground animate-pulse">
-              Loading your overview...
+              Cargando tu resumen...
             </p>
           </div>
         </div>
@@ -397,7 +397,7 @@ export default function DashboardPage() {
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center max-w-md">
           <Loader2 className="mx-auto size-8 text-destructive mb-3" />
           <h2 className="text-lg font-semibold text-foreground mb-2">
-            Could not load dashboard
+            No se pudo cargar el inicio
           </h2>
           <p className="text-sm text-muted-foreground mb-4">{error}</p>
           <button
@@ -405,7 +405,7 @@ export default function DashboardPage() {
             className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
           >
             <Loader2 className="size-4" />
-            Retry
+            Reintentar
           </button>
         </div>
       </div>
@@ -420,9 +420,9 @@ export default function DashboardPage() {
   const statsCards = stats
     ? [
         {
-          title: 'Appointments Today',
+          title: 'Turnos Hoy',
           value: stats.appointmentsToday,
-          description: `${stats.appointmentsTodayCompleted} completed, ${stats.appointmentsToday - stats.appointmentsTodayCompleted} remaining`,
+          description: `${stats.appointmentsTodayCompleted} completados, ${stats.appointmentsToday - stats.appointmentsTodayCompleted} pendientes`,
           icon: CalendarDays,
           trend: {
             value: Math.abs(stats.trends.appointmentsToday),
@@ -430,9 +430,9 @@ export default function DashboardPage() {
           },
         },
         {
-          title: 'Confirmed Reservations',
+          title: 'Turnos Confirmados',
           value: stats.confirmedThisWeek,
-          description: 'This week',
+          description: 'Esta semana',
           icon: CheckCircle,
           trend: {
             value: Math.abs(stats.trends.confirmedThisWeek),
@@ -440,15 +440,15 @@ export default function DashboardPage() {
           },
         },
         {
-          title: 'Pending Reservations',
+          title: 'Turnos Pendientes',
           value: stats.pendingCount,
-          description: 'Awaiting confirmation',
+          description: 'Esperando confirmación',
           icon: Clock,
         },
         {
-          title: 'Registered Patients',
+          title: 'Pacientes Registrados',
           value: stats.totalPatients,
-          description: `${stats.newPatientsThisMonth} new this month`,
+          description: `${stats.newPatientsThisMonth} nuevos este mes`,
           icon: Users,
           trend: {
             value: Math.abs(stats.trends.totalPatients),
@@ -464,14 +464,14 @@ export default function DashboardPage() {
       <div className="flex items-end justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-accent mb-1">
-            Overview
+            Resumen
           </p>
           <h1 className="font-serif text-2xl font-semibold text-foreground lg:text-3xl leading-tight">
-            Dashboard
+            Inicio
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            Welcome back{professionalName ? `, ${professionalName}` : ''}. Here&apos;s
-            your overview for today.
+            Bienvenido{professionalName ? `, ${professionalName}` : ''}. Este es
+            tu resumen del día.
           </p>
         </div>
       </div>
@@ -488,7 +488,7 @@ export default function DashboardPage() {
         {/* Appointments — 2 columns */}
         <div className="space-y-6 lg:col-span-2">
           <AppointmentsTable
-            title="Upcoming Appointments"
+            title="Próximos Turnos"
             appointments={upcomingRows}
           />
           <WeeklySchedule schedule={weeklyScheduleData} />
@@ -497,7 +497,7 @@ export default function DashboardPage() {
         {/* Right Sidebar */}
         <div className="space-y-6">
           <AppointmentsTable
-            title="Pending Confirmations"
+            title="Pendientes de Confirmación"
             appointments={pendingRows}
           />
           <RecentPatients

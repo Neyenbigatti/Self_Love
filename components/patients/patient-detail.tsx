@@ -75,7 +75,7 @@ export function PatientDetail({
               </div>
               <Button variant="outline" size="sm" onClick={onEdit}>
                 <Edit2 data-icon="inline-start" />
-                Edit
+                Editar
               </Button>
             </div>
             <div className="flex flex-wrap gap-4 mt-4 text-sm">
@@ -100,11 +100,11 @@ export function PatientDetail({
         <div className="flex gap-2 mt-4">
           <Button onClick={onNewExploration} className="flex-1">
             <Stethoscope data-icon="inline-start" />
-            New Physical Exploration
+            Nueva Exploración Física
           </Button>
-          <Button variant="outline" className="flex-1">
+          <Button variant="outline" className="flex-1" onClick={onNewExploration}>
             <Camera data-icon="inline-start" />
-            Add Photos
+            Agregar Fotos
           </Button>
         </div>
       </CardHeader>
@@ -116,15 +116,15 @@ export function PatientDetail({
           <TabsList className="w-full justify-start">
             <TabsTrigger value="overview">
               <FileText className="size-4 mr-2" />
-              Overview
+              Resumen
             </TabsTrigger>
             <TabsTrigger value="medical">
               <Stethoscope className="size-4 mr-2" />
-              Medical History
+              Historial Médico
             </TabsTrigger>
             <TabsTrigger value="treatments">
               <History className="size-4 mr-2" />
-              Treatments
+              Tratamientos
             </TabsTrigger>
           </TabsList>
 
@@ -136,7 +136,7 @@ export function PatientDetail({
                     <div className="text-2xl font-bold text-accent">
                       {patient.totalVisits}
                     </div>
-                    <p className="text-sm text-muted-foreground">Total Visits</p>
+                    <p className="text-sm text-muted-foreground">Visitas Totales</p>
                   </CardContent>
                 </Card>
                 <Card>
@@ -144,7 +144,7 @@ export function PatientDetail({
                     <div className="text-2xl font-bold">
                       {patient.treatments?.length || 0}
                     </div>
-                    <p className="text-sm text-muted-foreground">Treatments</p>
+                    <p className="text-sm text-muted-foreground">Tratamientos</p>
                   </CardContent>
                 </Card>
                 <Card>
@@ -154,7 +154,7 @@ export function PatientDetail({
                         ? format(patient.lastVisit, "MMM d")
                         : "-"}
                     </div>
-                    <p className="text-sm text-muted-foreground">Last Visit</p>
+                    <p className="text-sm text-muted-foreground">Última Visita</p>
                   </CardContent>
                 </Card>
               </div>
@@ -162,7 +162,7 @@ export function PatientDetail({
               {patient.notes && (
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Notes</CardTitle>
+                    <CardTitle className="text-base">Notas</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
@@ -175,7 +175,7 @@ export function PatientDetail({
               {patient.treatments && patient.treatments.length > 0 && (
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Recent Treatments</CardTitle>
+                    <CardTitle className="text-base">Tratamientos Recientes</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-col gap-3">

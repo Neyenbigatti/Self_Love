@@ -78,7 +78,7 @@ export function BookingCalendar({
     <Card>
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Select Date & Time</CardTitle>
+          <CardTitle className="text-lg">Seleccioná Fecha y Hora</CardTitle>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -87,7 +87,7 @@ export function BookingCalendar({
               disabled={!canGoBack || loading}
             >
               <ChevronLeft className="size-4" />
-              <span className="sr-only">Previous week</span>
+              <span className="sr-only">Semana anterior</span>
             </Button>
             <span className="min-w-[140px] text-center text-sm font-medium">
               {format(weekStart, "MMM d")} - {format(addDays(weekStart, 6), "MMM d, yyyy")}
@@ -99,7 +99,7 @@ export function BookingCalendar({
               disabled={loading}
             >
               <ChevronRight className="size-4" />
-              <span className="sr-only">Next week</span>
+              <span className="sr-only">Semana siguiente</span>
             </Button>
           </div>
         </div>
@@ -143,7 +143,7 @@ export function BookingCalendar({
         {loading ? (
           <div className="flex h-40 items-center justify-center">
             <div className="animate-pulse text-sm text-muted-foreground">
-              Loading availability...
+              Cargando disponibilidad...
             </div>
           </div>
         ) : (
@@ -208,7 +208,7 @@ export function BookingCalendar({
                   ) : (
                     <div className="flex h-14 items-center justify-center">
                       <span className="text-xs text-muted-foreground">
-                        {isPast ? "-" : "No slots"}
+                        {isPast ? "-" : "Sin horarios"}
                       </span>
                     </div>
                   )}
@@ -221,9 +221,9 @@ export function BookingCalendar({
         {/* Selected Summary */}
         {selectedDate && selectedTime && (
           <div className="mt-6 rounded-lg bg-accent/10 p-4">
-            <p className="text-sm font-medium text-foreground">Selected Appointment</p>
+            <p className="text-sm font-medium text-foreground">Turno Seleccionado</p>
             <p className="mt-1 text-lg font-semibold text-accent">
-              {format(selectedDate, "EEEE, MMMM d, yyyy")} at {selectedTime}
+              {format(selectedDate, "EEEE, d MMMM yyyy")} a las {selectedTime}
             </p>
           </div>
         )}

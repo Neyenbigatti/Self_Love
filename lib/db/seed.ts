@@ -15,7 +15,7 @@
 import { randomUUID } from 'node:crypto';
 import { hashSync } from 'bcryptjs';
 import { db } from './client';
-import { users, appointments, availability, treatmentTypes, explorations, explorationPhotos } from './schema';
+import { users, appointments, availability, treatmentTypes, explorations, explorationPhotos, medicalHistories } from './schema';
 import {
   addDays,
   startOfWeek,
@@ -272,6 +272,82 @@ async function seed() {
     });
   }
   console.log(`  ✅ ${sampleAppointments.length} sample appointments created`);
+
+  // ── Completed Appointments (past dates for Treatment History) ────────────────
+  const completedAppts = [
+    { patientIdx: 0, dayOffset: -21, start: '09:00', end: '09:30', treatment: 'Botox' },
+    { patientIdx: 0, dayOffset: -7, start: '10:00', end: '10:20', treatment: 'Follow-up' },
+    { patientIdx: 1, dayOffset: -14, start: '10:30', end: '11:30', treatment: 'Dermal Fillers' },
+    { patientIdx: 3, dayOffset: -21, start: '15:00', end: '15:30', treatment: 'Consultation' },
+    { patientIdx: 4, dayOffset: -14, start: '09:30', end: '10:30', treatment: 'Microneedling' },
+    { patientIdx: 4, dayOffset: -7, start: '14:00', end: '14:20', treatment: 'Follow-up' },
+  ];
+
+  for (const apt of completedAppts) {
+    const appointmentDate = addDays(ws, apt.dayOffset);
+    await db.insert(appointments).values({
+      id: randomUUID(),
+      patientId: patientIds[apt.patientIdx],
+      professionalId: PROFESSIONAL_ID,
+      treatmentType: apt.treatment,
+      date: formatDate(appointmentDate),
+      startTime: apt.start,
+      endTime: apt.end,
+      status: 'completed',
+    });
+  }
+  console.log(`  ✅ ${completedAppts.length} completed appointments created`);
+
+  // ── Medical Histories ────────────────────────────────────────────────────────
+  const medicalSeedData = [
+    {
+      patientIdx: 0, // María García
+      allergies: ['Penicilina', 'Polen'],
+      medications: ['Vitamina D 1000 UI/día', 'Anticonceptivos orales'],
+      conditions: ['Rinitis alérgica estacional', 'Hipotiroidismo subclínico'],
+      previousTreatments: ['Ácido hialurónico - labios (2024)', 'Botox frontal (2025)'],
+    },
+    {
+      patientIdx: 1, // Laura Hernández
+      allergies: ['Látex', 'Ibuprofeno'],
+      medications: [],
+      conditions: ['Acné quístico recurrente'],
+      previousTreatments: ['Peeling químico (2024)', 'Láser CO2 fraccionado (2025)'],
+    },
+    {
+      patientIdx: 2, // Carmen Rodríguez
+      allergies: [],
+      medications: ['Losartán 50 mg/día', 'Metformina 850 mg/día'],
+      conditions: ['Hipertensión arterial', 'Diabetes tipo 2'],
+      previousTreatments: ['Botox frontal y patas de gallo (2025)'],
+    },
+    {
+      patientIdx: 3, // Carlos Ruiz
+      allergies: ['Sulfamidas'],
+      medications: ['Omeprazol 20 mg/día'],
+      conditions: ['Reflujo gastroesofágico'],
+      previousTreatments: [],
+    },
+    {
+      patientIdx: 4, // Ana Martínez
+      allergies: [],
+      medications: [],
+      conditions: ['Fototipo cutáneo II - sensibilidad solar alta'],
+      previousTreatments: ['Limpieza facial profunda (2025)'],
+    },
+  ];
+
+  for (const m of medicalSeedData) {
+    await db.insert(medicalHistories).values({
+      id: randomUUID(),
+      patientId: patientIds[m.patientIdx],
+      allergies: JSON.stringify(m.allergies),
+      medications: JSON.stringify(m.medications),
+      conditions: JSON.stringify(m.conditions),
+      previousTreatments: JSON.stringify(m.previousTreatments),
+    });
+  }
+  console.log(`  ✅ ${medicalSeedData.length} medical histories created`);
 
   // ── Sample Explorations ──────────────────────────────────────────────────
   const explorationSeedData = [

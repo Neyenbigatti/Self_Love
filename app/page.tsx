@@ -24,7 +24,7 @@ export default function AuthPage() {
   if (isLoading) {
     return (
       <main className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="animate-pulse text-muted-foreground text-sm">Loading...</div>
+        <div className="animate-pulse text-muted-foreground text-sm">Cargando...</div>
       </main>
     )
   }

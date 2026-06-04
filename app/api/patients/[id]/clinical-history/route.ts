@@ -78,20 +78,34 @@ export async function GET(
     }
 
     // ── 2. Medical history ───────────────────────────────────────────────────
-    const [medHistory] = await db
-      .select()
-      .from(medicalHistories)
-      .where(eq(medicalHistories.patientId, id))
-      .limit(1);
+    // Gracefully handle missing table (schema out of sync) — return null instead of crashing.
+    let medicalHistory: {
+      allergies: string[];
+      medications: string[];
+      conditions: string[];
+      previousTreatments: string[];
+    } | null = null;
 
-    const medicalHistory = medHistory
-      ? {
+    try {
+      const [medHistory] = await db
+        .select()
+        .from(medicalHistories)
+        .where(eq(medicalHistories.patientId, id))
+        .limit(1);
+
+      if (medHistory) {
+        medicalHistory = {
           allergies: parseJsonArray(medHistory.allergies),
           medications: parseJsonArray(medHistory.medications),
           conditions: parseJsonArray(medHistory.conditions),
           previousTreatments: parseJsonArray(medHistory.previousTreatments),
-        }
-      : null;
+        };
+      }
+    } catch (_e) {
+      console.warn(
+        '[clinical-history] medical_histories table not available — returning null',
+      );
+    }
 
     // ── 3. Completed appointments (as treatment records) ─────────────────────
     const completedAppointments = await db
@@ -162,7 +176,8 @@ export async function GET(
       explorations: explorationsWithPhotos,
     });
   } catch (error) {
-    console.error('[clinical-history] GET error:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('[clinical-history] GET error:', message);
     return serverError(error);
   }
 }

@@ -29,9 +29,9 @@ export function TreatmentHistoryTab({ treatments }: TreatmentHistoryTabProps) {
         <div className="size-16 rounded-full bg-muted flex items-center justify-center mb-4">
           <FileText className="size-8 text-muted-foreground" />
         </div>
-        <h3 className="font-medium mb-1">No Treatment History</h3>
+        <h3 className="font-medium mb-1">Sin Historial de Tratamientos</h3>
         <p className="text-sm text-muted-foreground max-w-sm">
-          No treatments have been recorded for this patient yet.
+          Todavía no se registraron tratamientos para este paciente.
         </p>
       </div>
     );
@@ -60,7 +60,7 @@ export function TreatmentHistoryTab({ treatments }: TreatmentHistoryTabProps) {
                 <div className="flex items-center gap-2">
                   <User className="size-4 text-muted-foreground" />
                   <span className="text-sm">
-                    Performed by:{" "}
+                    Realizado por:{" "}
                     <span className="font-medium">{treatment.professional}</span>
                   </span>
                 </div>
@@ -68,7 +68,7 @@ export function TreatmentHistoryTab({ treatments }: TreatmentHistoryTabProps) {
                 {treatment.notes && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Treatment Notes</CardTitle>
+                      <CardTitle className="text-sm">Notas del Tratamiento</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm text-muted-foreground whitespace-pre-wrap">
@@ -83,7 +83,7 @@ export function TreatmentHistoryTab({ treatments }: TreatmentHistoryTabProps) {
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
                         <Image className="size-4" />
-                        Before & After Photos
+                        Fotos Antes y Después
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -91,7 +91,7 @@ export function TreatmentHistoryTab({ treatments }: TreatmentHistoryTabProps) {
                         {treatment.photos.before && (
                           <div>
                             <Badge variant="secondary" className="mb-2">
-                              Before
+                              Antes
                             </Badge>
                             <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
                               <Image className="size-8 text-muted-foreground" />
@@ -101,7 +101,7 @@ export function TreatmentHistoryTab({ treatments }: TreatmentHistoryTabProps) {
                         {treatment.photos.after && (
                           <div>
                             <Badge variant="secondary" className="mb-2">
-                              After
+                              Después
                             </Badge>
                             <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
                               <Image className="size-8 text-muted-foreground" />

@@ -20,9 +20,9 @@ export function RecentPatients({ patients }: RecentPatientsProps) {
   return (
     <div className="rounded-xl border border-border bg-card shadow-sm">
       <div className="flex items-center justify-between border-b border-border px-6 py-4">
-        <h3 className="text-lg font-semibold text-foreground">Recent Patients</h3>
+        <h3 className="text-lg font-semibold text-foreground">Pacientes Recientes</h3>
         <Button variant="ghost" size="sm" className="text-accent">
-          View All
+          Ver Todos
           <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
       </div>
@@ -46,13 +46,13 @@ export function RecentPatients({ patients }: RecentPatientsProps) {
               <div>
                 <p className="text-sm font-medium text-foreground">{patient.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  Last visit: {patient.lastVisit}
+                  Última visita: {patient.lastVisit}
                 </p>
               </div>
             </div>
             {patient.nextAppointment && (
               <div className="text-right">
-                <p className="text-xs text-muted-foreground">Next appointment</p>
+                <p className="text-xs text-muted-foreground">Próximo turno</p>
                 <p className="text-sm font-medium text-foreground">
                   {patient.nextAppointment}
                 </p>

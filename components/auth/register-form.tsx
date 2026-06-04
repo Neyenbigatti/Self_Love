@@ -26,8 +26,8 @@ interface FormErrors {
 const userTypeOptions = [
   {
     value: "patient" as const,
-    label: "Patient",
-    sub: "Book treatments",
+    label: "Paciente",
+    sub: "Reservar Turnos",
     icon: (
       <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -36,8 +36,8 @@ const userTypeOptions = [
   },
   {
     value: "professional" as const,
-    label: "Professional",
-    sub: "Manage clinic",
+    label: "Profesional",
+    sub: "Gestionar Clínica",
     icon: (
       <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
@@ -101,14 +101,14 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
  
   const validate = (): FormErrors => {
     const errs: FormErrors = {}
-    if (!formData.fullName.trim()) errs.fullName = "Full name is required"
-    if (!formData.email) errs.email = "Email is required"
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errs.email = "Enter a valid email address"
-    if (!formData.password) errs.password = "Password is required"
-    else if (formData.password.length < 8) errs.password = "Must be at least 8 characters"
+    if (!formData.fullName.trim()) errs.fullName = "El nombre completo es obligatorio"
+    if (!formData.email) errs.email = "El email es obligatorio"
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errs.email = "Ingresá un email válido"
+    if (!formData.password) errs.password = "La contraseña es obligatoria"
+    else if (formData.password.length < 8) errs.password = "Debe tener al menos 8 caracteres"
     if (userType === "professional") {
-      if (!formData.professionalTitle.trim()) errs.professionalTitle = "Professional title is required"
-      if (!formData.clinicName.trim()) errs.clinicName = "Clinic name is required"
+      if (!formData.professionalTitle.trim()) errs.professionalTitle = "El título profesional es obligatorio"
+      if (!formData.clinicName.trim()) errs.clinicName = "El nombre de la clínica es obligatorio"
     }
     return errs
   }
@@ -155,7 +155,7 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
       })
       router.push(user.role === 'professional' ? '/dashboard' : '/patient')
     } catch (err) {
-      setApiError(err instanceof Error ? err.message : 'Registration failed')
+      setApiError(err instanceof Error ? err.message : 'Error al registrarse')
     } finally {
       setIsLoading(false)
     }
@@ -172,7 +172,7 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
 
       {/* User type selector */}
       <fieldset>
-        <legend className="text-sm font-medium text-foreground mb-2">I am registering as a</legend>
+        <legend className="text-sm font-medium text-foreground mb-2">Me registro como</legend>
         <div className="grid grid-cols-2 gap-3">
           {userTypeOptions.map((opt) => (
             <button
@@ -206,11 +206,11 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
       </fieldset>
  
       {/* Common fields */}
-      <Field id="fullName" label="Full Name" error={fieldError("fullName")}>
+      <Field id="fullName" label="Nombre Completo" error={fieldError("fullName")}>
         <Input
           id="fullName"
           type="text"
-          placeholder="Enter your full name"
+          placeholder="Ingresá tu nombre completo"
           value={formData.fullName}
           onChange={(e) => handleChange("fullName", e.target.value)}
           onBlur={() => handleBlur("fullName")}
@@ -223,11 +223,11 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
       {/* Professional-specific fields */}
       {userType === "professional" && (
         <>
-          <Field id="professionalTitle" label="Professional Title" error={fieldError("professionalTitle")}>
+          <Field id="professionalTitle" label="Título Profesional" error={fieldError("professionalTitle")}>
             <Input
               id="professionalTitle"
               type="text"
-              placeholder="e.g., Dermatologist, Cosmetic Surgeon"
+              placeholder="Ej: Dermatóloga, Cosmetóloga"
               value={formData.professionalTitle}
               onChange={(e) => handleChange("professionalTitle", e.target.value)}
               onBlur={() => handleBlur("professionalTitle")}
@@ -237,11 +237,11 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
             />
           </Field>
  
-          <Field id="clinicName" label="Clinic Name" error={fieldError("clinicName")}>
+          <Field id="clinicName" label="Nombre de la Clínica" error={fieldError("clinicName")}>
             <Input
               id="clinicName"
               type="text"
-              placeholder="Enter your clinic name"
+              placeholder="Ingresá el nombre de tu clínica"
               value={formData.clinicName}
               onChange={(e) => handleChange("clinicName", e.target.value)}
               onBlur={() => handleBlur("clinicName")}
@@ -253,11 +253,11 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
         </>
       )}
  
-      <Field id="email" label="Email Address" error={fieldError("email")}>
+      <Field id="email" label="Correo Electrónico" error={fieldError("email")}>
         <Input
           id="email"
           type="email"
-          placeholder="you@example.com"
+          placeholder="tu@ejemplo.com"
           value={formData.email}
           onChange={(e) => handleChange("email", e.target.value)}
           onBlur={() => handleBlur("email")}
@@ -269,14 +269,14 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
  
       <Field
         id="password"
-        label="Password"
+        label="Contraseña"
         error={fieldError("password")}
-        hint="Minimum 8 characters"
+        hint="Mínimo 8 caracteres"
       >
         <Input
           id="password"
           type="password"
-          placeholder="Create a secure password"
+          placeholder="Creá una contraseña segura"
           value={formData.password}
           onChange={(e) => handleChange("password", e.target.value)}
           onBlur={() => handleBlur("password")}
@@ -288,11 +288,11 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
  
       {/* Patient phone */}
       {userType === "patient" && (
-        <Field id="phone" label="Phone Number" error={fieldError("phone")}>
+        <Field id="phone" label="Teléfono" error={fieldError("phone")}>
           <Input
             id="phone"
             type="tel"
-            placeholder="+1 (555) 000-0000"
+            placeholder="+54 11 1234-5678"
             value={formData.phone}
             onChange={(e) => handleChange("phone", e.target.value)}
             onBlur={() => handleBlur("phone")}
@@ -313,10 +313,10 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            Creating account…
+            Creando cuenta…
           </span>
         ) : (
-          `Create ${userType === "patient" ? "Patient" : "Professional"} Account`
+          `Crear Cuenta ${userType === "patient" ? "de Paciente" : "de Profesional"}`
         )}
       </Button>
  
@@ -326,7 +326,7 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
           <div className="w-full border-t border-border/50" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-card px-3 text-muted-foreground">Already have an account?</span>
+          <span className="bg-card px-3 text-muted-foreground">¿Ya tenés una cuenta?</span>
         </div>
       </div>
  
@@ -335,7 +335,7 @@ export function RegisterForm({ userType, onUserTypeChange, onSwitchToLogin }: Re
         onClick={onSwitchToLogin}
         className="w-full text-sm text-accent hover:text-accent/80 font-medium transition-colors focus-visible:outline-none focus-visible:underline"
       >
-        Sign in instead
+        Iniciar Sesión
       </button>
     </form>
   )

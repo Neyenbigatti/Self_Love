@@ -23,7 +23,7 @@ export default function PatientLayout({
   if (isLoading || !user || user.role !== 'patient') {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground text-sm">Loading...</div>
+        <div className="animate-pulse text-muted-foreground text-sm">Cargando...</div>
       </div>
     )
   }

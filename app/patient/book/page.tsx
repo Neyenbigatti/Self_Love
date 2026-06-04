@@ -83,7 +83,7 @@ export default function BookAppointmentPage() {
         }
       })
       .catch(() => {
-        setError('Failed to load session. Please try again.')
+        setError('Error al cargar la sesión. Intentá de nuevo.')
       })
       .finally(() => setLoadingSession(false))
   }, [])
@@ -102,7 +102,7 @@ export default function BookAppointmentPage() {
         setTreatmentTypes(data.treatmentTypes ?? [])
       })
       .catch(() => {
-        setError('Failed to load treatments.')
+        setError('Error al cargar tratamientos.')
       })
       .finally(() => setLoadingTreatments(false))
   }, [selectedProfessional])
@@ -150,13 +150,13 @@ export default function BookAppointmentPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to book appointment')
+        throw new Error(data.error || 'Error al reservar turno')
       }
 
       // Success — redirect to patient dashboard
       router.push('/patient?booked=true')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setError(err instanceof Error ? err.message : 'Algo salió mal')
     } finally {
       setBooking(false)
     }
@@ -180,7 +180,7 @@ export default function BookAppointmentPage() {
   if (loadingSession) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-pulse text-muted-foreground text-sm">Loading...</div>
+        <div className="animate-pulse text-muted-foreground text-sm">Cargando...</div>
       </div>
     )
   }
@@ -192,16 +192,16 @@ export default function BookAppointmentPage() {
       <div className="space-y-8">
         <Link href="/patient" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="size-4" />
-          Back to appointments
+          Volver a mis turnos
         </Link>
         <Card>
           <CardHeader>
-            <CardTitle>Session required</CardTitle>
-            <CardDescription>Please log in to book an appointment.</CardDescription>
+            <CardTitle>Iniciá sesión</CardTitle>
+            <CardDescription>Necesitás iniciar sesión para reservar un turno.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild>
-              <Link href="/">Go to Login</Link>
+              <Link href="/">Ir a Iniciar Sesión</Link>
             </Button>
           </CardContent>
         </Card>
@@ -216,12 +216,12 @@ export default function BookAppointmentPage() {
       <div className="space-y-8">
         <Link href="/patient" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="size-4" />
-          Back to appointments
+          Volver a mis turnos
         </Link>
         <Card>
           <CardHeader>
-            <CardTitle>No professionals available</CardTitle>
-            <CardDescription>There are no professionals available for booking at this time.</CardDescription>
+            <CardTitle>No hay profesionales disponibles</CardTitle>
+            <CardDescription>No hay profesionales disponibles para reservar en este momento.</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -235,15 +235,15 @@ export default function BookAppointmentPage() {
       <div className="space-y-8">
         <Link href="/patient" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="size-4" />
-          Back to appointments
+          Volver a mis turnos
         </Link>
 
         <div>
           <h1 className="font-serif text-2xl font-semibold text-foreground lg:text-3xl leading-tight">
-            Book an Appointment
+            Reservar un Turno
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            Select a professional to book with.
+            Seleccioná un profesional para reservar.
           </p>
         </div>
 
@@ -273,9 +273,9 @@ export default function BookAppointmentPage() {
   // ── Step indicator ────────────────────────────────────────────────────────
 
   const steps = [
-    { key: 'treatment' as Step, label: 'Treatment', icon: Scissors },
-    { key: 'datetime' as Step, label: 'Date & Time', icon: Calendar },
-    { key: 'confirm' as Step, label: 'Confirm', icon: Check },
+    { key: 'treatment' as Step, label: 'Tratamiento', icon: Scissors },
+    { key: 'datetime' as Step, label: 'Fecha y Hora', icon: Calendar },
+    { key: 'confirm' as Step, label: 'Confirmar', icon: Check },
   ]
 
   return (
@@ -287,9 +287,9 @@ export default function BookAppointmentPage() {
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="size-4" />
-          {step === 'datetime' && 'Change treatment'}
-          {step === 'confirm' && 'Change date & time'}
-          {step === 'treatment' && 'Back to appointments'}
+          {step === 'datetime' && 'Cambiar tratamiento'}
+          {step === 'confirm' && 'Cambiar fecha y hora'}
+          {step === 'treatment' && 'Volver a mis turnos'}
         </button>
 
         {/* Step indicator */}
@@ -337,9 +337,9 @@ export default function BookAppointmentPage() {
       {/* Heading */}
       <div>
         <h1 className="font-serif text-2xl font-semibold text-foreground lg:text-3xl leading-tight">
-          {step === 'treatment' && 'Select Treatment'}
-          {step === 'datetime' && 'Choose Date & Time'}
-          {step === 'confirm' && 'Confirm Your Appointment'}
+          {step === 'treatment' && 'Seleccionar Tratamiento'}
+          {step === 'datetime' && 'Elegir Fecha y Hora'}
+          {step === 'confirm' && 'Confirmar Turno'}
         </h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
           Booking with <span className="font-medium text-foreground">{selectedProfessional.name}</span>
@@ -359,14 +359,14 @@ export default function BookAppointmentPage() {
         <>
           {loadingTreatments ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-pulse text-muted-foreground text-sm">Loading treatments...</div>
+              <div className="animate-pulse text-muted-foreground text-sm">Cargando tratamientos...</div>
             </div>
           ) : treatmentTypes.length === 0 ? (
             <Card>
               <CardHeader>
-                <CardTitle>No treatments available</CardTitle>
+                <CardTitle>No hay tratamientos disponibles</CardTitle>
                 <CardDescription>
-                  This professional hasn&apos;t set up their treatments yet.
+                  Este profesional todavía no configuró sus tratamientos.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -426,7 +426,7 @@ export default function BookAppointmentPage() {
               disabled={!selectedDate || !selectedTime}
               onClick={handleProceedToConfirm}
             >
-              Continue to Confirm
+              Continuar a Confirmar
               <Check className="ml-2 size-4" />
             </Button>
           </div>
@@ -437,18 +437,18 @@ export default function BookAppointmentPage() {
       {step === 'confirm' && selectedTreatment && selectedDate && selectedTime && (
         <Card>
           <CardHeader>
-            <CardTitle>Appointment Summary</CardTitle>
+            <CardTitle>Resumen del Turno</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               {/* Treatment */}
               <div className="rounded-lg bg-secondary/50 p-4">
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                  Treatment
+                  Tratamiento
                 </p>
                 <p className="font-semibold text-foreground">{selectedTreatment.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {selectedTreatment.duration} minutes
+                  {selectedTreatment.duration} min
                   {selectedTreatment.price !== null && selectedTreatment.price > 0 && (
                     <> &middot; {formatPrice(selectedTreatment.price)}</>
                   )}
@@ -458,7 +458,7 @@ export default function BookAppointmentPage() {
               {/* Professional */}
               <div className="rounded-lg bg-secondary/50 p-4">
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                  Professional
+                  Profesional
                 </p>
                 <p className="font-semibold text-foreground">{selectedProfessional.name}</p>
                 {selectedProfessional.title && (
@@ -469,7 +469,7 @@ export default function BookAppointmentPage() {
               {/* Date & Time */}
               <div className="rounded-lg bg-secondary/50 p-4">
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                  Date
+                  Fecha
                 </p>
                 <p className="font-semibold text-foreground">
                   {format(selectedDate, 'EEEE, MMMM d, yyyy')}
@@ -479,7 +479,7 @@ export default function BookAppointmentPage() {
               {/* Time */}
               <div className="rounded-lg bg-secondary/50 p-4">
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                  Time
+                  Horario
                 </p>
                 <p className="font-semibold text-foreground">
                   {selectedTime} - {addMinutes(selectedTime, selectedTreatment.duration)}
@@ -489,25 +489,25 @@ export default function BookAppointmentPage() {
 
             {/* Status note */}
             <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
-              <p className="font-medium">Pending Confirmation</p>
+              <p className="font-medium">Pendiente de Confirmación</p>
               <p className="mt-1 text-amber-700">
-                Your appointment will be created as pending. The clinic will confirm it shortly.
+                El turno se creará como pendiente. La clínica lo confirmará a la brevedad.
               </p>
             </div>
 
             {/* Book button */}
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={handleBack}>
-                Change
+                Cambiar
               </Button>
               <Button size="lg" onClick={handleConfirm} disabled={booking}>
                 {booking ? (
                   <>
                     <Loader2 className="mr-2 size-4 animate-spin" />
-                    Booking...
+                    Reservando...
                   </>
                 ) : (
-                  'Confirm Booking'
+                  'Confirmar Reserva'
                 )}
               </Button>
             </div>

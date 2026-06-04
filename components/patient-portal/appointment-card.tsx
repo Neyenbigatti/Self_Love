@@ -29,22 +29,22 @@ interface AppointmentCardProps {
 
 const statusConfig = {
   confirmed: {
-    label: "Confirmed",
+    label: "Confirmado",
     variant: "default" as const,
     className: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
   },
   pending: {
-    label: "Pending Payment",
+    label: "Pendiente de Pago",
     variant: "secondary" as const,
     className: "bg-amber-100 text-amber-700 hover:bg-amber-100",
   },
   cancelled: {
-    label: "Cancelled",
+    label: "Cancelado",
     variant: "secondary" as const,
     className: "bg-muted text-muted-foreground hover:bg-muted",
   },
   completed: {
-    label: "Completed",
+    label: "Completado",
     variant: "secondary" as const,
     className: "bg-secondary text-secondary-foreground hover:bg-secondary",
   },
@@ -74,7 +74,7 @@ export function AppointmentCard({
               {appointment.treatmentType}
             </h3>
             <p className="text-sm text-muted-foreground">
-              {appointment.professionalName || 'Professional'}
+              {appointment.professionalName || 'Profesional'}
             </p>
           </div>
           <Badge className={cn("shrink-0", status.className)}>
@@ -124,7 +124,7 @@ export function AppointmentCard({
 
         {appointment.notes && (
           <div className="mt-4 rounded-lg bg-secondary/50 p-3">
-            <p className="text-xs font-medium text-muted-foreground">Notes</p>
+            <p className="text-xs font-medium text-muted-foreground">Notas</p>
             <p className="mt-1 text-sm text-foreground">{appointment.notes}</p>
           </div>
         )}
@@ -139,7 +139,7 @@ export function AppointmentCard({
             onClick={onContactWhatsApp}
           >
             <MessageCircle className="mr-2 size-4" />
-            Contact via WhatsApp
+            Contactar por WhatsApp
           </Button>
           
           {isPending && (
@@ -149,7 +149,7 @@ export function AppointmentCard({
               onClick={onSendPayment}
             >
               <Upload className="mr-2 size-4" />
-              Send Payment Proof
+              Enviar Comprobante
             </Button>
           )}
 
@@ -162,23 +162,23 @@ export function AppointmentCard({
                   className="text-destructive border-destructive/30 hover:bg-destructive/10"
                 >
                   <XCircle className="mr-2 size-4" />
-                  Cancel Appointment
+                  Cancelar Turno
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Cancel Appointment</AlertDialogTitle>
+                  <AlertDialogTitle>Cancelar Turno</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to cancel this appointment?
+                    ¿Estás segura de que querés cancelar este turno?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Keep Appointment</AlertDialogCancel>
+                  <AlertDialogCancel>Mantener Turno</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() => onCancel(appointment.id)}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
-                    Yes, Cancel
+                    Sí, Cancelar
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

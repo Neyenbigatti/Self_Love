@@ -67,7 +67,7 @@ export default function CalendarPage() {
         if (!res.ok) {
           const err = await res.json();
           console.error('Failed to update appointment:', err);
-          toast.error(err?.error || 'Failed to update appointment');
+          toast.error(err?.error || 'Error al actualizar el turno');
           return;
         }
       } else {
@@ -79,7 +79,7 @@ export default function CalendarPage() {
         if (!res.ok) {
           const err = await res.json();
           console.error('Failed to create appointment:', err);
-          toast.error(err?.error || 'Failed to create appointment');
+          toast.error(err?.error || 'Error al crear el turno');
           return;
         }
       }
@@ -94,10 +94,10 @@ export default function CalendarPage() {
         }),
       ) as Appointment[];
       setAppointments(transformed);
-      toast.success(data.id ? 'Appointment updated' : 'Appointment created');
+      toast.success(data.id ? 'Turno actualizado' : 'Turno creado');
     } catch (err) {
       console.error('Failed to save appointment:', err);
-      toast.error('Failed to save appointment');
+      toast.error('Error al guardar el turno');
     }
   };
 
@@ -107,11 +107,11 @@ export default function CalendarPage() {
       if (!res.ok) {
         const err = await res.json();
         console.error('Failed to delete appointment:', err);
-        toast.error(err?.error || 'Failed to delete appointment');
+        toast.error(err?.error || 'Error al eliminar el turno');
         return;
       }
       setAppointments((prev) => prev.filter((apt) => apt.id !== id));
-      toast.success('Appointment deleted');
+      toast.success('Turno eliminado');
     } catch (err) {
       console.error('Failed to delete appointment:', err);
       toast.error('Failed to delete appointment');

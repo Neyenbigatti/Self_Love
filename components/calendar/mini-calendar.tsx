@@ -20,6 +20,13 @@ export function MiniCalendar({ selectedDate, onDateSelect, appointments }: MiniC
     isSameDay(apt.date, selectedDate)
   );
 
+  const statusLabels: Record<string, string> = {
+    confirmed: 'Confirmado',
+    pending: 'Pendiente',
+    cancelled: 'Cancelado',
+    completed: 'Completado',
+  };
+
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'confirmed':
@@ -56,12 +63,12 @@ export function MiniCalendar({ selectedDate, onDateSelect, appointments }: MiniC
       <div className="rounded-lg border border-border bg-card p-4">
         <h3 className="font-semibold text-foreground mb-3">
           {isToday(selectedDate)
-            ? 'Today'
+            ? 'Hoy'
             : format(selectedDate, "EEEE, d MMMM", { locale: es })}
         </h3>
         
         {selectedDayAppointments.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No appointments scheduled</p>
+          <p className="text-sm text-muted-foreground">No hay turnos agendados</p>
         ) : (
           <ScrollArea className="h-[200px]">
             <div className="flex flex-col gap-3">
@@ -80,7 +87,7 @@ export function MiniCalendar({ selectedDate, onDateSelect, appointments }: MiniC
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-medium truncate">{apt.patientName}</p>
                       <Badge variant={getStatusBadgeVariant(apt.status)} className="text-[10px] px-1.5">
-                        {apt.status}
+                        {statusLabels[apt.status] || apt.status}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">{apt.treatmentType}</p>

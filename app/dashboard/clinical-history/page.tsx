@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { PatientList } from "@/components/patients/patient-list";
 import { MedicalHistoryTab } from "@/components/patients/medical-history-tab";
 import { TreatmentHistoryTab } from "@/components/patients/treatment-history-tab";
@@ -62,6 +63,8 @@ export default function ClinicalHistoryPage() {
   const [loadingPatients, setLoadingPatients] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const router = useRouter();
+
   // Clinical history state
   const [clinicalData, setClinicalData] = useState<ClinicalHistoryResponse | null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -94,40 +97,45 @@ export default function ClinicalHistoryPage() {
   }, []);
 
   // ── Fetch clinical history when patient changes ──────────────────────────
+  const loadClinicalHistory = useCallback(async (patient: Patient) => {
+    setLoadingHistory(true);
+    setHistoryError(null);
+
+    try {
+      const res = await fetch(
+        `/api/patients/${encodeURIComponent(patient.id)}/clinical-history`,
+      );
+
+      let errorMessage = "Failed to load clinical history";
+      if (!res.ok) {
+        try {
+          const errBody = await res.json();
+          errorMessage = errBody.error || `${errorMessage} (${res.status})`;
+        } catch {
+          errorMessage = `${errorMessage} (${res.status})`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await res.json();
+      setClinicalData(data);
+    } catch (err) {
+      setHistoryError(
+        err instanceof Error ? err.message : "Failed to load clinical history",
+      );
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!selectedPatient) {
       setClinicalData(null);
       return;
     }
-
-    let cancelled = false;
-
-    const load = async () => {
-      setLoadingHistory(true);
-      setHistoryError(null);
-
-      try {
-        const res = await fetch(
-          `/api/patients/${encodeURIComponent(selectedPatient.id)}/clinical-history`,
-        );
-        if (!res.ok) throw new Error("Failed to load clinical history");
-        const data = await res.json();
-        if (!cancelled) setClinicalData(data);
-      } catch (err) {
-        if (!cancelled) {
-          setHistoryError(
-            err instanceof Error ? err.message : "Failed to load clinical history",
-          );
-        }
-      } finally {
-        if (!cancelled) setLoadingHistory(false);
-      }
-    };
-
-    load();
+    loadClinicalHistory(selectedPatient);
     setActiveTab("medical");
-    return () => { cancelled = true; };
-  }, [selectedPatient]);
+  }, [selectedPatient, loadClinicalHistory]);
 
   // ── Build TreatmentRecords from completed appointments ─────────────────────
   const treatmentRecords = clinicalData?.completedAppointments.map((apt) => ({
@@ -144,7 +152,7 @@ export default function ClinicalHistoryPage() {
       <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="size-8 animate-spin text-muted-foreground" />
-          <p className="text-muted-foreground">Loading patients...</p>
+          <p className="text-muted-foreground">Cargando pacientes...</p>
         </div>
       </div>
     );
@@ -157,14 +165,14 @@ export default function ClinicalHistoryPage() {
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center py-16 text-center">
             <AlertCircle className="size-16 text-destructive mb-4" />
-            <h3 className="text-lg font-medium mb-2">Error</h3>
+              <h3 className="text-lg font-medium mb-2">Error al cargar</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button
-              variant="outline"
-              onClick={() => window.location.reload()}
-            >
-              Retry
-            </Button>
+              <Button
+                variant="outline"
+                onClick={() => window.location.reload()}
+              >
+                Reintentar
+              </Button>
           </CardContent>
         </Card>
       </div>
@@ -179,7 +187,7 @@ export default function ClinicalHistoryPage() {
           patients={patients}
           selectedPatient={selectedPatient}
           onSelectPatient={setSelectedPatient}
-          onNewPatient={() => {}}
+          onNewPatient={() => router.push("/dashboard/patients")}
         />
       </div>
 
@@ -193,11 +201,11 @@ export default function ClinicalHistoryPage() {
                 <FolderOpen className="size-10 text-muted-foreground" />
               </div>
               <h2 className="text-xl font-serif font-semibold mb-2">
-                Clinical History
+                Historial Clínico
               </h2>
               <p className="text-muted-foreground max-w-md">
-                Select a patient from the list to view their complete clinical
-                history, including medical records and treatment history.
+                Seleccioná un paciente de la lista para ver su historial
+                clínico completo, incluyendo registros médicos y tratamientos.
               </p>
             </CardContent>
           </Card>
@@ -206,9 +214,9 @@ export default function ClinicalHistoryPage() {
           <Card className="h-full">
             <CardContent className="flex flex-col items-center justify-center h-full text-center py-16">
               <Loader2 className="size-10 animate-spin text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-1">Loading clinical history</h3>
+              <h3 className="text-lg font-medium mb-1">Cargando historial clínico</h3>
               <p className="text-sm text-muted-foreground">
-                Retrieving data for {selectedPatient.name}...
+                Obteniendo datos de {selectedPatient.name}...
               </p>
             </CardContent>
           </Card>
@@ -217,13 +225,13 @@ export default function ClinicalHistoryPage() {
           <Card className="h-full">
             <CardContent className="flex flex-col items-center justify-center h-full text-center py-16">
               <AlertCircle className="size-16 text-destructive mb-4" />
-              <h3 className="text-lg font-medium mb-2">Error loading history</h3>
+              <h3 className="text-lg font-medium mb-2">Error al cargar historial</h3>
               <p className="text-muted-foreground mb-4">{historyError}</p>
               <Button
                 variant="outline"
-                onClick={() => setSelectedPatient(selectedPatient)}
+                onClick={() => selectedPatient && loadClinicalHistory(selectedPatient)}
               >
-                Retry
+                Reintentar
               </Button>
             </CardContent>
           </Card>
@@ -236,7 +244,7 @@ export default function ClinicalHistoryPage() {
                 {selectedPatient.name}
               </h1>
               <p className="text-muted-foreground mt-1">
-                Clinical history and medical records
+                Historial clínico y registros médicos
               </p>
             </div>
 
@@ -244,11 +252,11 @@ export default function ClinicalHistoryPage() {
               <TabsList className="w-full justify-start">
                 <TabsTrigger value="medical">
                   <Stethoscope className="size-4 mr-2" />
-                  Medical History
+                  Historial Médico
                 </TabsTrigger>
                 <TabsTrigger value="treatments">
                   <History className="size-4 mr-2" />
-                  Treatments ({treatmentRecords.length})
+                  Tratamientos ({treatmentRecords.length})
                 </TabsTrigger>
               </TabsList>
 
@@ -274,9 +282,9 @@ export default function ClinicalHistoryPage() {
                       <div className="size-16 rounded-full bg-muted flex items-center justify-center mb-4">
                         <History className="size-8 text-muted-foreground" />
                       </div>
-                      <h3 className="font-medium mb-1">No Treatment History</h3>
+                      <h3 className="font-medium mb-1">Sin Historial de Tratamientos</h3>
                       <p className="text-sm text-muted-foreground max-w-sm">
-                        No completed treatments have been recorded for this patient yet.
+                        Todavía no se registraron tratamientos completados para este paciente.
                       </p>
                     </CardContent>
                   </Card>
@@ -288,9 +296,9 @@ export default function ClinicalHistoryPage() {
             {clinicalData && clinicalData.explorations.length > 0 && (
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Physical Explorations</CardTitle>
+                  <CardTitle className="text-lg">Exploraciones Físicas</CardTitle>
                   <CardDescription>
-                    {clinicalData.explorations.length} exploration(s) on record
+                    {clinicalData.explorations.length} exploración(es) registradas
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

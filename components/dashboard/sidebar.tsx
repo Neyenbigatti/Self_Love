@@ -16,14 +16,14 @@ import {
 // ─── Nav structure ────────────────────────────────────────────────────────────
 // Settings is visually separated at the bottom; clinical items sit above.
 const primaryNav = [
-  { label: 'Calendar',             href: '/dashboard/calendar',              icon: Calendar     },
-  { label: 'Patients',             href: '/dashboard/patients',              icon: Users        },
-  { label: 'Clinical History',     href: '/dashboard/clinical-history',      icon: ClipboardList },
-  { label: 'Physical Exploration', href: '/dashboard/exploration',  icon: Stethoscope  },
+  { label: 'Calendario',            href: '/dashboard/calendar',              icon: Calendar     },
+  { label: 'Pacientes',             href: '/dashboard/patients',              icon: Users        },
+  { label: 'Historial Clínico',     href: '/dashboard/clinical-history',      icon: ClipboardList },
+  { label: 'Exploración Física',    href: '/dashboard/exploration',           icon: Stethoscope  },
 ]
 
 const secondaryNav = [
-  { label: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { label: 'Configuración', href: '/dashboard/settings', icon: Settings },
 ]
 
 interface SidebarProps {
@@ -163,7 +163,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
           'flex flex-1 flex-col gap-0.5 overflow-y-auto overflow-x-hidden py-3',
           collapsed ? 'px-0' : 'px-2',
         )}
-        aria-label="Main navigation"
+        aria-label="Navegación principal"
       >
         {primaryNav.map((item) => (
           <NavItem
@@ -206,8 +206,8 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
             'outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset',
             collapsed ? 'justify-center px-0' : 'px-4',
           )}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+          aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
         >
           {collapsed ? (
             <PanelLeftOpen
@@ -220,7 +220,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
                 style={{ width: '0.9375rem', height: '0.9375rem' }}
                 className="shrink-0"
               />
-              <span className="font-medium tracking-[-0.01em]">Collapse</span>
+              <span className="font-medium tracking-[-0.01em]">Colapsar</span>
             </>
           )}
         </button>

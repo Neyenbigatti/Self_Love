@@ -100,22 +100,22 @@ export function PaymentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Send Payment Proof</DialogTitle>
+          <DialogTitle>Enviar Comprobante de Pago</DialogTitle>
           <DialogDescription>
-            Complete your reservation for{" "}
+            Completá tu reserva para{" "}
             <span className="font-medium text-foreground">
               {appointment.treatmentType}
             </span>{" "}
-            on{" "}
+            del{" "}
             <span className="font-medium text-foreground">
-              {format(appointment.date, "MMMM d, yyyy")}
+              {format(appointment.date, "d MMMM yyyy")}
             </span>
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="transfer" className="mt-4">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="transfer">Bank Transfer</TabsTrigger>
+            <TabsTrigger value="transfer">Transferencia Bancaria</TabsTrigger>
             <TabsTrigger value="bizum">Bizum</TabsTrigger>
           </TabsList>
 
@@ -126,7 +126,7 @@ export function PaymentDialog({
                 <QrCode className="size-24 text-foreground" />
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
-                Scan QR code with your banking app
+                Escaneá el código QR con tu app bancaria
               </p>
             </div>
 
@@ -134,7 +134,7 @@ export function PaymentDialog({
             <div className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-secondary/50 p-3">
                 <div>
-                  <p className="text-xs text-muted-foreground">Bank</p>
+                  <p className="text-xs text-muted-foreground">Banco</p>
                   <p className="font-medium">{mockBankInfo.bank}</p>
                 </div>
               </div>
@@ -159,7 +159,7 @@ export function PaymentDialog({
 
               <div className="flex items-center justify-between rounded-lg bg-secondary/50 p-3">
                 <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">Concept</p>
+                  <p className="text-xs text-muted-foreground">Concepto</p>
                   <p className="font-medium">
                     {mockBankInfo.concept} - {appointment.id}
                   </p>
@@ -181,7 +181,7 @@ export function PaymentDialog({
 
               <div className="flex items-center justify-between rounded-lg bg-accent/10 p-3">
                 <div>
-                  <p className="text-xs text-muted-foreground">Amount</p>
+                  <p className="text-xs text-muted-foreground">Monto</p>
                   <p className="text-lg font-semibold text-accent">
                     {mockBankInfo.amount} EUR
                   </p>
@@ -195,13 +195,13 @@ export function PaymentDialog({
               <div className="flex size-16 items-center justify-center rounded-full bg-accent">
                 <Smartphone className="size-8 text-accent-foreground" />
               </div>
-              <p className="mt-4 text-lg font-semibold">Send Bizum to</p>
+              <p className="mt-4 text-lg font-semibold">Enviar Bizum a</p>
               <p className="text-2xl font-bold text-accent">+34 612 345 678</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                Amount: {mockBankInfo.amount} EUR
+                Monto: {mockBankInfo.amount} EUR
               </p>
               <p className="text-sm text-muted-foreground">
-                Concept: {mockBankInfo.concept} - {appointment.id}
+                Concepto: {mockBankInfo.concept} - {appointment.id}
               </p>
             </div>
           </TabsContent>
@@ -209,7 +209,7 @@ export function PaymentDialog({
 
         {/* Upload Section */}
         <div className="mt-6 space-y-3">
-          <Label>Upload Payment Proof</Label>
+          <Label>Subir Comprobante de Pago</Label>
           
           {!selectedFile ? (
             <div
@@ -226,10 +226,10 @@ export function PaymentDialog({
             >
               <Upload className="size-10 text-muted-foreground" />
               <p className="mt-3 text-sm font-medium text-foreground">
-                Drop your file here or click to upload
+                Soltá tu archivo acá o hacé clic para subir
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Supports: JPG, PNG, PDF (max 5MB)
+                Formatos: JPG, PNG, PDF (máx. 5MB)
               </p>
               <input
                 ref={fileInputRef}
@@ -254,7 +254,7 @@ export function PaymentDialog({
               {previewUrl ? (
                 <img
                   src={previewUrl}
-                  alt="Payment proof preview"
+                    alt="Vista previa del comprobante"
                   className="mx-auto max-h-48 rounded-lg object-contain"
                 />
               ) : (
@@ -276,7 +276,7 @@ export function PaymentDialog({
 
         <DialogFooter className="mt-6">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            Cancelar
           </Button>
           <Button
             onClick={handleSubmit}
@@ -284,7 +284,7 @@ export function PaymentDialog({
             className="bg-accent text-accent-foreground hover:bg-accent/90"
           >
             <Check className="mr-2 size-4" />
-            Send Proof
+            Enviar Comprobante
           </Button>
         </DialogFooter>
       </DialogContent>

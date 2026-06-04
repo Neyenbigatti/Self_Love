@@ -115,10 +115,75 @@ export default function PatientsPage() {
       // Add new
       return [savedPatient, ...prev];
     });
-    setSelectedPatient(savedPatient);
+    setSelectedPatient((prev) => {
+      if (!prev || prev.id !== savedPatient.id) return savedPatient;
+      // Preserve fetched medicalHistory and treatments when updating name/email/etc.
+      return {
+        ...savedPatient,
+        medicalHistory: prev.medicalHistory,
+        treatments: prev.treatments,
+      };
+    });
   };
 
   const router = useRouter();
+
+  // ── Fetch patient details (medicalHistory + treatments) when selected ────────
+  useEffect(() => {
+    if (!selectedPatient) return;
+
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const [patientRes, historyRes] = await Promise.all([
+          fetch(`/api/patients/${selectedPatient.id}`),
+          fetch(`/api/patients/${selectedPatient.id}/clinical-history`),
+        ]);
+
+        if (cancelled) return;
+
+        // Merge medicalHistory from patient endpoint
+        let medicalHistory: Patient["medicalHistory"] | undefined;
+        if (patientRes.ok) {
+          const patientData = await patientRes.json();
+          medicalHistory = patientData.medicalHistory ?? undefined;
+        }
+
+        // Merge treatments from clinical-history endpoint (completed appointments)
+        let treatments: Patient["treatments"] | undefined;
+        if (historyRes.ok) {
+          const historyData = await historyRes.json();
+          treatments = (historyData.completedAppointments ?? []).map(
+            (apt: { id: string; date: string; startTime?: string; treatmentType: string; notes?: string; professionalName?: string }) => ({
+              id: apt.id,
+              date: new Date(apt.date + "T" + (apt.startTime || "00:00")),
+              treatment: apt.treatmentType,
+              notes: apt.notes || "",
+              professional: apt.professionalName || "Professional",
+            }),
+          );
+        }
+
+        if (!cancelled) {
+          setSelectedPatient((prev) => {
+            if (!prev || prev.id !== selectedPatient.id) return prev;
+            return {
+              ...prev,
+              medicalHistory: prev.medicalHistory ?? medicalHistory,
+              treatments: prev.treatments ?? treatments,
+            };
+          });
+        }
+      } catch (err) {
+        console.error("[patients] Failed to load patient details:", err);
+        // Non-critical enhancement — don't show error to user
+      }
+    };
+
+    load();
+    return () => { cancelled = true; };
+  }, [selectedPatient?.id]);
 
   const handleNewExploration = () => {
     if (!selectedPatient) return;
@@ -164,7 +229,7 @@ export default function PatientsPage() {
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center max-w-md">
           <Loader2 className="mx-auto size-8 text-destructive mb-3" />
           <h2 className="text-lg font-semibold text-foreground mb-2">
-            Could not load patients
+            No se pudieron cargar los pacientes
           </h2>
           <p className="text-sm text-muted-foreground mb-4">{error}</p>
           <button
@@ -172,7 +237,7 @@ export default function PatientsPage() {
             className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors"
           >
             <Loader2 className="size-4" />
-            Retry
+            Reintentar
           </button>
         </div>
       </div>
@@ -203,10 +268,10 @@ export default function PatientsPage() {
             <div className="size-20 rounded-full bg-muted flex items-center justify-center mb-4">
               <UserCircle className="size-10 text-muted-foreground" />
             </div>
-            <h3 className="font-serif text-xl mb-2">Select a Patient</h3>
+            <h3 className="font-serif text-xl mb-2">Seleccionar Paciente</h3>
             <p className="text-muted-foreground max-w-sm">
-              Choose a patient from the list to view their profile, medical
-              history, and treatment records.
+              Elegí un paciente de la lista para ver su perfil, historial
+              médico y tratamientos.
             </p>
           </div>
         )}

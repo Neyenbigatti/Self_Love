@@ -32,7 +32,7 @@ export function AuthCard() {
           SelfLove
         </h1>
         <p className="text-muted-foreground text-sm mt-2">
-          Premium Medical Aesthetics
+          Estética Médica Premium
         </p>
       </div>
 
@@ -49,7 +49,7 @@ export function AuthCard() {
                 : "text-muted-foreground hover:text-foreground hover:bg-background/30"
             )}
           >
-            Sign In
+            Iniciar Sesión
           </button>
           <button
             onClick={() => setMode("register")}
@@ -60,7 +60,7 @@ export function AuthCard() {
                 : "text-muted-foreground hover:text-foreground hover:bg-background/30"
             )}
           >
-            Create Account
+            Crear Cuenta
           </button>
         </div>
 
@@ -80,13 +80,13 @@ export function AuthCard() {
 
       {/* Footer */}
       <p className="text-center text-xs text-muted-foreground mt-6">
-        By continuing, you agree to our{" "}
+        Al continuar, aceptás nuestros{" "}
         <a href="#" className="underline hover:text-foreground transition-colors">
-          Terms of Service
+          Términos de Servicio
         </a>{" "}
-        and{" "}
+        y nuestra{" "}
         <a href="#" className="underline hover:text-foreground transition-colors">
-          Privacy Policy
+          Política de Privacidad
         </a>
       </p>
     </div>

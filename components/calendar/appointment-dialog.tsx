@@ -129,7 +129,7 @@ export function AppointmentDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="font-serif text-xl">
-            {isEditing ? 'Edit Appointment' : 'New Appointment'}
+            {isEditing ? 'Editar Turno' : 'Nuevo Turno'}
           </DialogTitle>
         </DialogHeader>
 
@@ -138,11 +138,11 @@ export function AppointmentDialog({
           <div className="grid gap-2">
             <Label htmlFor="patient" className="flex items-center gap-2">
               <User className="size-4 text-muted-foreground" />
-              Patient
+              Paciente
             </Label>
             <Select value={patientId} onValueChange={setPatientId}>
               <SelectTrigger id="patient">
-                <SelectValue placeholder="Select a patient" />
+                <SelectValue placeholder="Seleccionar paciente" />
               </SelectTrigger>
               <SelectContent>
                 {patients.map((patient) => (
@@ -158,11 +158,11 @@ export function AppointmentDialog({
           <div className="grid gap-2">
             <Label htmlFor="treatment" className="flex items-center gap-2">
               <FileText className="size-4 text-muted-foreground" />
-              Treatment
+              Tratamiento
             </Label>
             <Select value={treatmentType} onValueChange={setTreatmentType}>
               <SelectTrigger id="treatment">
-                <SelectValue placeholder="Select treatment type" />
+                <SelectValue placeholder="Seleccionar tratamiento" />
               </SelectTrigger>
               <SelectContent>
                 {treatmentTypes.map((type) => (
@@ -178,7 +178,7 @@ export function AppointmentDialog({
           <div className="grid gap-2">
             <Label className="flex items-center gap-2">
               <CalendarIcon className="size-4 text-muted-foreground" />
-              Date
+              Fecha
             </Label>
             <Popover>
               <PopoverTrigger asChild>
@@ -190,7 +190,7 @@ export function AppointmentDialog({
                   )}
                 >
                   <CalendarIcon className="mr-2 size-4" />
-                  {date ? format(date, "PPP", { locale: es }) : "Pick a date"}
+                  {date ? format(date, "PPP", { locale: es }) : "Seleccionar fecha"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -208,7 +208,7 @@ export function AppointmentDialog({
             <div className="grid gap-2">
               <Label htmlFor="startTime" className="flex items-center gap-2">
                 <Clock className="size-4 text-muted-foreground" />
-                Start Time
+                Hora de Inicio
               </Label>
               <Select value={startTime} onValueChange={setStartTime}>
                 <SelectTrigger id="startTime">
@@ -230,7 +230,7 @@ export function AppointmentDialog({
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="endTime">End Time</Label>
+              <Label htmlFor="endTime">Hora de Fin</Label>
               <Input
                 id="endTime"
                 value={endTime}
@@ -243,16 +243,16 @@ export function AppointmentDialog({
           {/* Status (only for editing) */}
           {isEditing && (
             <div className="grid gap-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">Estado</Label>
               <Select value={status} onValueChange={(v) => setStatus(v as Appointment['status'])}>
                 <SelectTrigger id="status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="pending">Pendiente</SelectItem>
+                  <SelectItem value="confirmed">Confirmado</SelectItem>
+                  <SelectItem value="cancelled">Cancelado</SelectItem>
+                  <SelectItem value="completed">Completado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -260,12 +260,12 @@ export function AppointmentDialog({
 
           {/* Notes */}
           <div className="grid gap-2">
-            <Label htmlFor="notes">Notes (optional)</Label>
+            <Label htmlFor="notes">Notas (opcional)</Label>
             <Input
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add any notes..."
+              placeholder="Agregar notas..."
             />
           </div>
         </div>
@@ -279,20 +279,20 @@ export function AppointmentDialog({
                 onOpenChange(false);
               }}
             >
-              Delete
+              Eliminar
             </Button>
           ) : (
             <div />
           )}
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              Cancelar
             </Button>
             <Button
               onClick={handleSave}
               disabled={!patientId || !treatmentType}
             >
-              {isEditing ? 'Save Changes' : 'Create Appointment'}
+              {isEditing ? 'Guardar Cambios' : 'Crear Turno'}
             </Button>
           </div>
         </div>

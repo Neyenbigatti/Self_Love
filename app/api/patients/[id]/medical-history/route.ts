@@ -44,11 +44,21 @@ export async function GET(
     const auth = requireRole(session, 'professional');
     if (!('user' in auth)) return auth;
 
-    const [row] = await db
-      .select()
-      .from(medicalHistories)
-      .where(eq(medicalHistories.patientId, id))
-      .limit(1);
+    // Gracefully handle missing table (schema out of sync) — return null instead of crashing.
+    let row: typeof medicalHistories.$inferSelect | undefined;
+
+    try {
+      const [result] = await db
+        .select()
+        .from(medicalHistories)
+        .where(eq(medicalHistories.patientId, id))
+        .limit(1);
+      row = result;
+    } catch (_e) {
+      console.warn(
+        '[medical-history] medical_histories table not available — returning null',
+      );
+    }
 
     return NextResponse.json({ medicalHistory: parseMedicalHistory(row) });
   } catch (error) {

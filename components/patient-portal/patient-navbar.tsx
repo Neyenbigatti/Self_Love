@@ -55,19 +55,19 @@ export function PatientNavbar() {
             href="/patient"
             className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
-            <span className="flex items-center gap-2">
-              <Calendar className="size-4" />
-              My Appointments
-            </span>
+              <span className="flex items-center gap-2">
+                <Calendar className="size-4" />
+                Mis Turnos
+              </span>
           </Link>
           <Link
             href="/patient/book"
             className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
-            <span className="flex items-center gap-2">
-              <Clock className="size-4" />
-              Book Appointment
-            </span>
+              <span className="flex items-center gap-2">
+                <Clock className="size-4" />
+                Reservar Turno
+              </span>
           </Link>
         </nav>
 
@@ -77,7 +77,7 @@ export function PatientNavbar() {
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="size-5" />
             <span className="absolute right-1 top-1 size-2 rounded-full bg-accent" />
-            <span className="sr-only">Notifications</span>
+            <span className="sr-only">Notificaciones</span>
           </Button>
 
           {/* User Menu */}
@@ -96,24 +96,24 @@ export function PatientNavbar() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium leading-none">{patientName}</p>
-                  <p className="text-xs leading-none text-muted-foreground">Patient</p>
+                  <p className="text-xs leading-none text-muted-foreground">Paciente</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem>
                   <User className="mr-2 size-4" />
-                  <span>My Profile</span>
+                  <span>Mi Perfil</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Calendar className="mr-2 size-4" />
-                  <span>My Appointments</span>
+                  <span>Mis Turnos</span>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={handleLogout}>
                 <LogOut className="mr-2 size-4" />
-                  <span>Log out</span>
+                  <span>Cerrar Sesión</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -126,7 +126,7 @@ export function PatientNavbar() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-            <span className="sr-only">Toggle menu</span>
+            <span className="sr-only">Abrir menú</span>
           </Button>
         </div>
       </div>
@@ -145,7 +145,7 @@ export function PatientNavbar() {
             onClick={() => setMobileMenuOpen(false)}
           >
             <Calendar className="size-4" />
-            My Appointments
+            Mis Turnos
           </Link>
           <Link
             href="/patient/book"
@@ -153,7 +153,7 @@ export function PatientNavbar() {
             onClick={() => setMobileMenuOpen(false)}
           >
             <Clock className="size-4" />
-            Book Appointment
+            Reservar Turno
           </Link>
         </nav>
       </div>

@@ -37,7 +37,7 @@ export function Header({ onMenuClick, onLogout, professional }: HeaderProps) {
         className="lg:hidden"
       >
         <Menu className="h-5 w-5" />
-        <span className="sr-only">Toggle menu</span>
+        <span className="sr-only">Abrir menú</span>
       </Button>
 
       {/* Professional Info (Desktop) */}
@@ -54,7 +54,7 @@ export function Header({ onMenuClick, onLogout, professional }: HeaderProps) {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search patients, appointments..."
+            placeholder="Buscar pacientes, turnos..."
             className="w-full bg-secondary/50 pl-9 focus:bg-card"
           />
         </div>
@@ -68,7 +68,7 @@ export function Header({ onMenuClick, onLogout, professional }: HeaderProps) {
           {hasNotifications && (
             <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-accent" />
           )}
-          <span className="sr-only">Notifications</span>
+          <span className="sr-only">Notificaciones</span>
         </Button>
 
         {/* User Dropdown */}
@@ -97,11 +97,11 @@ export function Header({ onMenuClick, onLogout, professional }: HeaderProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
-              Profile
+              Perfil
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Settings className="mr-2 h-4 w-4" />
-              Settings
+              Configuración
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -109,7 +109,7 @@ export function Header({ onMenuClick, onLogout, professional }: HeaderProps) {
               onSelect={onLogout}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Log out
+              Cerrar Sesión
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

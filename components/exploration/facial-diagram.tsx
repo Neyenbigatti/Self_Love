@@ -60,7 +60,7 @@ export function FacialDiagram({ analysis, selectedZone, onSelectZone }: FacialDi
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Facial Zone Analysis</CardTitle>
+        <CardTitle className="text-lg">Análisis de Zonas Faciales</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="relative mx-auto w-64 h-80 bg-muted rounded-full overflow-hidden border-2 border-border">
@@ -147,7 +147,7 @@ export function ZoneDetailForm({ zone, data, onChange }: ZoneDetailFormProps) {
       <CardContent className="space-y-6">
         {/* Condition */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Condition</Label>
+          <Label className="text-sm font-medium">Estado</Label>
           <RadioGroup
             value={data.condition}
             onValueChange={(value) => onChange({ ...data, condition: value as AreaAnalysis["condition"] })}
@@ -166,10 +166,10 @@ export function ZoneDetailForm({ zone, data, onChange }: ZoneDetailFormProps) {
 
         {/* Notes */}
         <div className="space-y-2">
-          <Label htmlFor={`${zone}-notes`} className="text-sm font-medium">Clinical Notes</Label>
+          <Label htmlFor={`${zone}-notes`} className="text-sm font-medium">Notas Clínicas</Label>
           <Textarea
             id={`${zone}-notes`}
-            placeholder="Enter observations for this area..."
+            placeholder="Ingresá observaciones para esta zona..."
             value={data.notes}
             onChange={(e) => onChange({ ...data, notes: e.target.value })}
             rows={3}
@@ -178,7 +178,7 @@ export function ZoneDetailForm({ zone, data, onChange }: ZoneDetailFormProps) {
 
         {/* Recommended Treatments */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Recommended Treatments</Label>
+          <Label className="text-sm font-medium">Tratamientos Recomendados</Label>
           <Select
             value=""
             onValueChange={(value) => {
@@ -191,7 +191,7 @@ export function ZoneDetailForm({ zone, data, onChange }: ZoneDetailFormProps) {
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Add treatment recommendation" />
+              <SelectValue placeholder="Agregar tratamiento recomendado" />
             </SelectTrigger>
             <SelectContent>
               {treatmentOptions
@@ -225,7 +225,7 @@ export function ZoneDetailForm({ zone, data, onChange }: ZoneDetailFormProps) {
                     <svg className="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    <span className="sr-only">Remove {treatment}</span>
+                    <span className="sr-only">Eliminar {treatment}</span>
                   </button>
                 </span>
               ))}
@@ -276,7 +276,7 @@ export function FacialAnalysisForm({ initialData = {}, onChange }: FacialAnalysi
       ) : (
         <Card>
           <CardContent className="flex items-center justify-center h-full min-h-[300px] text-muted-foreground">
-            Select a facial zone to analyze
+            Seleccioná una zona facial para analizar
           </CardContent>
         </Card>
       )}

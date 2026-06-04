@@ -48,7 +48,7 @@ export function AppointmentsTable({ appointments, title }: AppointmentsTableProp
       <div className="divide-y divide-border/60">
         {appointments.length === 0 ? (
           <div className="px-5 py-10 text-center text-sm text-muted-foreground">
-            No appointments scheduled
+            No hay turnos programados
           </div>
         ) : (
           appointments.map((appointment) => {
@@ -90,7 +90,11 @@ export function AppointmentsTable({ appointments, title }: AppointmentsTableProp
                     )}
                   >
                     <span className={cn('h-1.5 w-1.5 rounded-full', status.dot)} />
-                    {appointment.status}
+                    {appointment.status === 'confirmed' ? 'Confirmado'
+                      : appointment.status === 'pending' ? 'Pendiente'
+                      : appointment.status === 'completed' ? 'Completado'
+                      : appointment.status === 'cancelled' ? 'Cancelado'
+                      : appointment.status}
                   </span>
                 </div>
               </div>

@@ -21,7 +21,7 @@ const photoAngles: { id: PhotoAngle; label: string; icon: React.ReactNode }[] = 
   },
   {
     id: "left",
-    label: "Left Profile",
+    label: "Perfil Izquierdo",
     icon: (
       <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -31,7 +31,7 @@ const photoAngles: { id: PhotoAngle; label: string; icon: React.ReactNode }[] = 
   },
   {
     id: "right",
-    label: "Right Profile",
+    label: "Perfil Derecho",
     icon: (
       <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12a3 3 0 116 0 3 3 0 01-6 0z" />
@@ -41,7 +41,7 @@ const photoAngles: { id: PhotoAngle; label: string; icon: React.ReactNode }[] = 
   },
   {
     id: "up",
-    label: "Looking Up",
+    label: "Mirando Arriba",
     icon: (
       <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9a3 3 0 100 6 3 3 0 000-6z" />
@@ -51,7 +51,7 @@ const photoAngles: { id: PhotoAngle; label: string; icon: React.ReactNode }[] = 
   },
   {
     id: "down",
-    label: "Looking Down",
+    label: "Mirando Abajo",
     icon: (
       <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
@@ -125,7 +125,7 @@ export function PhotoCapture({ photos, onPhotosChange, initialData }: PhotoCaptu
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Photo Documentation</CardTitle>
+        <CardTitle className="text-lg">Documentación Fotográfica</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Angle selection */}
@@ -158,7 +158,7 @@ export function PhotoCapture({ photos, onPhotosChange, initialData }: PhotoCaptu
             <>
               <img
                 src={getPhotoForAngle(selectedAngle)!.url}
-                alt={`${selectedAngle} view`}
+                alt={`Vista ${photoAngles.find((a) => a.id === selectedAngle)?.label || selectedAngle}`}
                 className="w-full h-full object-cover"
               />
               <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
@@ -172,14 +172,14 @@ export function PhotoCapture({ photos, onPhotosChange, initialData }: PhotoCaptu
                       variant="secondary"
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      Replace
+                      Reemplazar
                     </Button>
                     <Button
                       size="sm"
                       variant="destructive"
                       onClick={() => removePhoto(selectedAngle)}
                     >
-                      Remove
+                      Eliminar
                     </Button>
                   </div>
                 </div>
@@ -205,9 +205,9 @@ export function PhotoCapture({ photos, onPhotosChange, initialData }: PhotoCaptu
                 />
               </svg>
               <span className="text-lg font-medium">
-                Capture {photoAngles.find((a) => a.id === selectedAngle)?.label} Photo
+                Capturar Foto: {photoAngles.find((a) => a.id === selectedAngle)?.label}
               </span>
-              <span className="text-sm mt-1">Click to upload or drag and drop</span>
+              <span className="text-sm mt-1">Hacé clic para subir o arrastrá y soltá</span>
             </button>
           )}
         </div>
@@ -236,7 +236,7 @@ export function PhotoCapture({ photos, onPhotosChange, initialData }: PhotoCaptu
                 {photo ? (
                   <img
                     src={photo.url}
-                    alt={`${angle.label} thumbnail`}
+                    alt={`Miniatura ${angle.label}`}
                     className="w-full h-full object-cover"
                   />
                 ) : (

@@ -22,3 +22,16 @@ export interface DaySchedule {
   isToday?: boolean
   slots: ScheduleSlot[]
 }
+
+// ─── Availability ───────────────────────────────────────────────────────────────
+
+export interface AvailabilityRule {
+  id: string
+  dayOfWeek: number | null       // 0=Sunday, 6=Saturday
+  specificDate: string | null    // YYYY-MM-DD
+  startTime: string              // HH:mm
+  endTime: string                // HH:mm
+  type: 'regular' | 'break' | 'blocked'
+  isAvailable: boolean
+  label: string | null
+}

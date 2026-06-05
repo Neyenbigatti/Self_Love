@@ -100,6 +100,10 @@ export async function GET(request: Request) {
       }
     }
 
+    // Sort slots chronologically — entries come from DB in insertion order
+    // but must be presented to the patient in ascending time order.
+    slotEntries.sort((a, b) => a.time.localeCompare(b.time));
+
     // ── Step 6: Fetch existing appointments for the date/professional ──────
     const existingAppointments = await db
       .select({ startTime: appointments.startTime, endTime: appointments.endTime })

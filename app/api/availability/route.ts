@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { availability } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, or, lt, gt } from 'drizzle-orm';
 import { getSession } from '@/lib/auth';
 import { requireRole } from '@/lib/api/auth-guard';
 import { validate } from '@/lib/api/validators/common';
 import { createAvailabilitySchema } from '@/lib/api/validators/availability';
-import { badRequest, serverError } from '@/lib/api/errors';
+import { badRequest, conflict, serverError } from '@/lib/api/errors';
 import { randomUUID } from 'crypto';
 
 // ─── GET /api/availability ───────────────────────────────────────────────────
@@ -57,6 +57,31 @@ export async function POST(request: Request) {
     // ── Infer isAvailable from type if not provided ─────────────────────────
     const isAvailable =
       data.isAvailable ?? (data.type === 'blocked' ? false : true);
+
+    // ── Overlap check (regular weekly rules only) ───────────────────────────
+    if (data.type === 'regular' && data.dayOfWeek !== undefined) {
+      const [overlap] = await db
+        .select({ id: availability.id, dayOfWeek: availability.dayOfWeek, startTime: availability.startTime, endTime: availability.endTime })
+        .from(availability)
+        .where(
+          and(
+            eq(availability.professionalId, user.id),
+            eq(availability.dayOfWeek, data.dayOfWeek),
+            eq(availability.type, 'regular'),
+            or(
+              and(
+                lt(availability.startTime, data.endTime),
+                gt(availability.endTime, data.startTime),
+              ),
+            ),
+          ),
+        )
+        .limit(1);
+
+      if (overlap) {
+        return conflict('Se superpone con un horario existente');
+      }
+    }
 
     // ── Insert ──────────────────────────────────────────────────────────────
     const id = randomUUID();

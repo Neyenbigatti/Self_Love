@@ -114,7 +114,7 @@ export async function PATCH(
     }
 
     // ── Status transition validation ───────────────────────────────────────
-    if (data.status) {
+    if (data.status && data.status !== existing.status) {
       const allowed = VALID_TRANSITIONS[existing.status] ?? [];
       if (!allowed.includes(data.status)) {
         return conflict(

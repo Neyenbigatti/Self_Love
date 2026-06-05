@@ -8,8 +8,8 @@ interface WhatsAppFabProps {
   message?: string;
 }
 
-const DEFAULT_PHONE = "5491123456789"; // Número de contacto SelfLove
-const DEFAULT_MESSAGE = "Hola, quería consultar sobre mis turnos";
+const DEFAULT_PHONE = "2473468672"; // Número de contacto SelfLove  
+const DEFAULT_MESSAGE = "Hola! Me gustaría realizar una consulta fuera de los tratamientos que se muestran en tu aplicación :) ";
 
 export function WhatsAppFab({
   phoneNumber = DEFAULT_PHONE,
@@ -32,7 +32,7 @@ export function WhatsAppFab({
       )}
     >
       <MessageCircle className="size-6" />
-      <span className="sr-only">Contactanos por WhatsApp</span>
+      <span className="sr-only">¡Contáctame por WhatsApp!</span>
     </a>
   );
 }

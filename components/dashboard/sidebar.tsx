@@ -7,6 +7,7 @@ import {
   ClipboardList,
   Stethoscope,
   Calendar,
+  Clock,
   Users,
   Settings,
   PanelLeftClose,
@@ -17,8 +18,9 @@ import {
 // Settings is visually separated at the bottom; clinical items sit above.
 const primaryNav = [
   { label: 'Calendario',            href: '/dashboard/calendar',              icon: Calendar     },
+  { label: 'Disponibilidad',        href: '/dashboard/availability',          icon: Clock        },
   { label: 'Pacientes',             href: '/dashboard/patients',              icon: Users        },
-  { label: 'Historial Clínico',     href: '/dashboard/clinical-history',      icon: ClipboardList },
+  { label: 'Historial Clínico',    href: '/dashboard/clinical-history',      icon: ClipboardList },
   { label: 'Exploración Física',    href: '/dashboard/exploration',           icon: Stethoscope  },
 ]
 

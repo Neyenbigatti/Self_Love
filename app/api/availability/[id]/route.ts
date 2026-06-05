@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { availability } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, ne, or, lt, gt } from 'drizzle-orm';
 import { getSession } from '@/lib/auth';
 import { requireRole } from '@/lib/api/auth-guard';
 import { validate } from '@/lib/api/validators/common';
 import { updateAvailabilitySchema } from '@/lib/api/validators/availability';
-import { badRequest, serverError, notFound, forbidden } from '@/lib/api/errors';
+import { badRequest, serverError, notFound, conflict, forbidden } from '@/lib/api/errors';
 
 // ─── PATCH /api/availability/[id] ────────────────────────────────────────────
 // Professional-only: update own availability entry
@@ -51,6 +51,37 @@ export async function PATCH(
 
     if (Object.keys(updateValues).length === 0) {
       return badRequest('No fields to update');
+    }
+
+    // ── Overlap check (regular weekly rules only) ───────────────────────────
+    const effectiveType = data.type ?? existing.type;
+    const effectiveDayOfWeek = data.dayOfWeek ?? existing.dayOfWeek;
+    const effectiveStartTime = data.startTime ?? existing.startTime;
+    const effectiveEndTime = data.endTime ?? existing.endTime;
+
+    if (effectiveType === 'regular' && effectiveDayOfWeek !== null) {
+      const [overlap] = await db
+        .select({ id: availability.id })
+        .from(availability)
+        .where(
+          and(
+            eq(availability.professionalId, user.id),
+            eq(availability.dayOfWeek, effectiveDayOfWeek),
+            eq(availability.type, 'regular'),
+            ne(availability.id, id),
+            or(
+              and(
+                lt(availability.startTime, effectiveEndTime),
+                gt(availability.endTime, effectiveStartTime),
+              ),
+            ),
+          ),
+        )
+        .limit(1);
+
+      if (overlap) {
+        return conflict('Se superpone con un horario existente');
+      }
     }
 
     // ── Update ──────────────────────────────────────────────────────────────

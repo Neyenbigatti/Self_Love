@@ -45,11 +45,19 @@ export function ConfigureHours({ onConfigured }: ConfigureHoursProps) {
         endTime: string;
       }[] = data.availability ?? [];
 
-      // A day is "covered" if it already has a regular rule whose range
-      // fully contains the preset range (startTime <= preset.start &&
-      // endTime >= preset.end). Partial coverage or different ranges
-      // still allow creating the preset rule.
-      function isDayCovered(day: number) {
+      // ── Classify each day ──────────────────────────────────────────────────
+      // Conservative approach: quick-set NEVER modifies existing rules.
+      // - No regular rules → create the preset
+      // - Has regular rule covering full preset range → skip (already done)
+      // - Has regular rule but doesn't cover full range → skip (manual needed)
+
+      const daysWithRegular = new Set(
+        existingRules
+          .filter((r) => r.type === "regular" && r.dayOfWeek !== null)
+          .map((r) => r.dayOfWeek!),
+      );
+
+      function isFullyCovered(day: number) {
         return existingRules.some(
           (r) =>
             r.type === "regular" &&
@@ -59,10 +67,23 @@ export function ConfigureHours({ onConfigured }: ConfigureHoursProps) {
         );
       }
 
-      // Build POST requests only for days not already covered by the preset
-      const requests = preset.days
-        .filter((day) => !isDayCovered(day))
-        .map((day) =>
+      const toCreate: number[] = [];
+      const alreadyConfigured: string[] = [];
+      const needsManual: string[] = [];
+
+      for (const day of preset.days) {
+        if (!daysWithRegular.has(day)) {
+          toCreate.push(day);
+        } else if (isFullyCovered(day)) {
+          alreadyConfigured.push(DAY_NAMES[day]);
+        } else {
+          needsManual.push(DAY_NAMES[day]);
+        }
+      }
+
+      // ── Create rules for empty days ───────────────────────────────────────
+      const results = await Promise.allSettled(
+        toCreate.map((day) =>
           fetch("/api/availability", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -73,29 +94,42 @@ export function ConfigureHours({ onConfigured }: ConfigureHoursProps) {
               type: "regular",
             }),
           }),
-        );
+        ),
+      );
 
-      if (requests.length === 0) {
-        toast.info("Todos los días ya tienen horario configurado");
-        setLoading(null);
-        return;
-      }
-
-      const results = await Promise.allSettled(requests);
       const created = results.filter(
         (r) => r.status === "fulfilled" && r.value.ok,
       ).length;
 
-      // Build skip summary
-      const skippedDays = preset.days.filter((d) => isDayCovered(d));
-      const skippedNames = skippedDays.map((d) => DAY_NAMES[d]);
+      // ── Build summary message ─────────────────────────────────────────────
+      const parts: string[] = [];
 
-      let message = `Creados ${created} horarios.`;
-      if (skippedNames.length > 0) {
-        message += ` ${skippedNames.join(", ")} ya tiene horario configurado.`;
+      if (created > 0) {
+        parts.push(`Creados ${created} horarios`);
       }
 
-      toast.success(message);
+      if (alreadyConfigured.length > 0) {
+        parts.push(
+          `${alreadyConfigured.join(", ")} ya tiene horario configurado`,
+        );
+      }
+
+      if (needsManual.length > 0) {
+        parts.push(
+          `${needsManual.join(", ")} requiere configuración manual`,
+        );
+      }
+
+      if (parts.length === 0) {
+        if (toCreate.length > 0) {
+          toast.error("No se pudieron crear los horarios");
+        } else {
+          toast.info("Todos los días ya tienen el horario completo");
+        }
+      } else {
+        toast.success(parts.join(". "));
+      }
+
       onConfigured();
     } catch (err) {
       console.error("[configure-hours] Error:", err);

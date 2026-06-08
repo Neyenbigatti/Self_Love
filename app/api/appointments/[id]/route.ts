@@ -38,6 +38,7 @@ export async function GET(
         patientId: appointments.patientId,
         professionalId: appointments.professionalId,
         treatmentType: appointments.treatmentType,
+        treatmentTypeId: appointments.treatmentTypeId,
         date: appointments.date,
         startTime: appointments.startTime,
         endTime: appointments.endTime,
@@ -172,6 +173,9 @@ export async function PATCH(
         ...(data.status !== undefined && { status: data.status as typeof appointments.status.enumValues[number] }),
         ...(data.treatmentType !== undefined && {
           treatmentType: data.treatmentType,
+        }),
+        ...(data.treatmentTypeId !== undefined && {
+          treatmentTypeId: data.treatmentTypeId,
         }),
         ...(data.date !== undefined && { date: data.date }),
         ...(data.startTime !== undefined && { startTime: data.startTime }),

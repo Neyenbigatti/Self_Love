@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { treatmentTypes } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { getSession } from '@/lib/auth';
 import { requireRole } from '@/lib/api/auth-guard';
 import { validate } from '@/lib/api/validators/common';
 import { createTreatmentSchema } from '@/lib/api/validators/treatments';
-import { badRequest, serverError } from '@/lib/api/errors';
+import { badRequest, conflict, serverError } from '@/lib/api/errors';
 import { randomUUID } from 'crypto';
 
 // ─── GET /api/treatment-types ─────────────────────────────────────────────────
@@ -32,10 +32,17 @@ export async function GET(request: Request) {
       return badRequest('professionalId is required for patients');
     }
 
+    const conditions = [eq(treatmentTypes.professionalId, targetProfessionalId)];
+
+    // Patients only see active treatments
+    if (user.role === 'patient') {
+      conditions.push(eq(treatmentTypes.isActive, true));
+    }
+
     const rows = await db
       .select()
       .from(treatmentTypes)
-      .where(eq(treatmentTypes.professionalId, targetProfessionalId));
+      .where(and(...conditions));
 
     return NextResponse.json({ treatmentTypes: rows });
   } catch (error) {
@@ -59,6 +66,32 @@ export async function POST(request: Request) {
 
     const data = parsed.data;
 
+    // ── Assign default sortOrder when not provided ───────────────────────────
+    if (data.sortOrder === undefined) {
+      const [maxResult] = await db
+        .select({ maxOrder: sql<number>`MAX(${treatmentTypes.sortOrder})` })
+        .from(treatmentTypes)
+        .where(eq(treatmentTypes.professionalId, user.id));
+
+      data.sortOrder = (maxResult?.maxOrder ?? -1) + 1;
+    }
+
+    // ── Enforce unique (professionalId, name) ────────────────────────────────
+    const [existing] = await db
+      .select({ id: treatmentTypes.id })
+      .from(treatmentTypes)
+      .where(
+        and(
+          eq(treatmentTypes.professionalId, user.id),
+          eq(treatmentTypes.name, data.name),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      return conflict('A treatment type with this name already exists');
+    }
+
     const id = randomUUID();
     const [treatmentType] = await db
       .insert(treatmentTypes)
@@ -69,6 +102,9 @@ export async function POST(request: Request) {
         duration: data.duration,
         description: data.description ?? null,
         price: data.price ?? null,
+        isActive: data.isActive,
+        category: data.category ?? null,
+        sortOrder: data.sortOrder ?? null,
       })
       .returning();
 

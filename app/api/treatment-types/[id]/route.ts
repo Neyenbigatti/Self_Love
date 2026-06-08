@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { treatmentTypes, appointments } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, ne } from 'drizzle-orm';
 import { getSession } from '@/lib/auth';
 import { requireRole } from '@/lib/api/auth-guard';
 import { validate } from '@/lib/api/validators/common';
@@ -41,6 +41,26 @@ export async function PATCH(
 
     const data = parsed.data;
 
+    // ── Rename guard: block if name changes and active appointments exist ────
+    if (data.name !== undefined && data.name !== existing.name) {
+      const [active] = await db
+        .select({ id: appointments.id })
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.treatmentTypeId, id),
+            ne(appointments.status, 'cancelled'),
+          ),
+        )
+        .limit(1);
+
+      if (active) {
+        return conflict(
+          'Cannot rename treatment type: there are active appointments referencing it',
+        );
+      }
+    }
+
     const [result] = await db
       .update(treatmentTypes)
       .set({
@@ -48,6 +68,9 @@ export async function PATCH(
         ...(data.duration !== undefined && { duration: data.duration }),
         ...(data.description !== undefined && { description: data.description }),
         ...(data.price !== undefined && { price: data.price }),
+        ...(data.isActive !== undefined && { isActive: data.isActive }),
+        ...(data.category !== undefined && { category: data.category }),
+        ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
       })
       .where(eq(treatmentTypes.id, id))
       .returning();
@@ -91,7 +114,7 @@ export async function DELETE(
       .select({ id: appointments.id })
       .from(appointments)
       .where(
-        eq(appointments.treatmentType, existing.name),
+        eq(appointments.treatmentTypeId, id),
       )
       .limit(1);
 

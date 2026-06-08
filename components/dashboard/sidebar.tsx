@@ -12,6 +12,7 @@ import {
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
+  Syringe,
 } from 'lucide-react'
 
 // ─── Nav structure ────────────────────────────────────────────────────────────
@@ -20,6 +21,7 @@ const primaryNav = [
   { label: 'Calendario',            href: '/dashboard/calendar',              icon: Calendar     },
   { label: 'Disponibilidad',        href: '/dashboard/availability',          icon: Clock        },
   { label: 'Pacientes',             href: '/dashboard/patients',              icon: Users        },
+  { label: 'Tratamientos',          href: '/dashboard/treatments',            icon: Syringe      },
   { label: 'Historial Clínico',    href: '/dashboard/clinical-history',      icon: ClipboardList },
   { label: 'Exploración Física',    href: '/dashboard/exploration',           icon: Stethoscope  },
 ]

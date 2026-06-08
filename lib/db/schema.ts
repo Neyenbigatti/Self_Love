@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 
@@ -41,6 +41,7 @@ export const appointments = sqliteTable('appointments', {
     .references(() => users.id)
     .notNull(),
   treatmentType: text('treatment_type').notNull(),
+  treatmentTypeId: text('treatment_type_id'),
   date: text('date').notNull(),             // ISO 8601 date (YYYY-MM-DD)
   startTime: text('start_time').notNull(),   // HH:mm
   endTime: text('end_time').notNull(),       // HH:mm
@@ -96,7 +97,12 @@ export const treatmentTypes = sqliteTable('treatment_types', {
   duration: integer('duration').notNull(), // minutes
   description: text('description'),
   price: integer('price'), // cents (optional for future use)
-});
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  category: text('category'),
+  sortOrder: integer('sort_order'),
+}, (table) => ({
+  uniqueNamePerProfessional: uniqueIndex('unique_prof_name').on(table.professionalId, table.name),
+}));
 
 export type TreatmentType = typeof treatmentTypes.$inferSelect;
 

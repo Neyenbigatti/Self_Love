@@ -7,6 +7,7 @@ export const createAppointmentSchema = z
   .object({
     patientId: uuidSchema,
     treatmentType: z.string().min(1, 'Treatment type is required'),
+    treatmentTypeId: z.string().optional(),
     date: dateStringSchema,
     startTime: timeStringSchema,
     endTime: timeStringSchema,
@@ -39,6 +40,7 @@ export const updateAppointmentSchema = z
       .enum(['pending', 'confirmed', 'cancelled', 'completed'])
       .optional(),
     treatmentType: z.string().min(1).optional(),
+    treatmentTypeId: z.string().optional(),
     date: dateStringSchema.optional(),
     startTime: timeStringSchema.optional(),
     endTime: timeStringSchema.optional(),

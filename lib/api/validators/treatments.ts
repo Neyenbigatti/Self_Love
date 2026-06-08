@@ -5,6 +5,9 @@ export const createTreatmentSchema = z.object({
   duration: z.number().int().positive('Duration must be positive'),
   description: z.string().optional(),
   price: z.number().int().nonnegative().optional(),
+  isActive: z.boolean().optional().default(true),
+  category: z.string().optional(),
+  sortOrder: z.number().int().nonnegative().optional(),
 });
 
 export const updateTreatmentSchema = z.object({
@@ -12,4 +15,7 @@ export const updateTreatmentSchema = z.object({
   duration: z.number().int().positive().optional(),
   description: z.string().optional(),
   price: z.number().int().nonnegative().optional(),
+  isActive: z.boolean().optional(),
+  category: z.string().optional(),
+  sortOrder: z.number().int().nonnegative().optional(),
 });

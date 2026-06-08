@@ -32,6 +32,7 @@ interface BookingCalendarProps {
   onSlotSelect: (date: Date, time: string) => void;
   selectedDate?: Date;
   selectedTime?: string;
+  duration?: number;
 }
 
 interface SlotInfo {
@@ -55,6 +56,7 @@ export function BookingCalendar({
   onSlotSelect,
   selectedDate,
   selectedTime,
+  duration,
 }: BookingCalendarProps) {
   const today = useMemo(() => startOfDay(new Date()), []);
   const maxDate = useMemo(() => addDays(today, BOOKING_WINDOW_DAYS), [today]);
@@ -118,8 +120,9 @@ export function BookingCalendar({
       setLoading(true);
       setError(null);
       try {
+        const durationParam = duration ? `&duration=${duration}` : "";
         const res = await fetch(
-          `/api/availability/slots?date=${dateStr}&professionalId=${professionalId}`,
+          `/api/availability/slots?date=${dateStr}&professionalId=${professionalId}${durationParam}`,
         );
         if (!res.ok) throw new Error("Error al cargar disponibilidad");
         const data = await res.json();
@@ -140,7 +143,7 @@ export function BookingCalendar({
         setLoading(false);
       }
     },
-    [professionalId],
+    [professionalId, duration],
   );
 
   // ── Fetch active date's slots when it changes (or on mount) ───────────────

@@ -40,12 +40,26 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date');
     const professionalId = searchParams.get('professionalId');
+    const durationParam = searchParams.get('duration');
 
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return badRequest('date is required (YYYY-MM-DD)');
     }
     if (!professionalId || !professionalId.trim()) {
       return badRequest('professionalId is required');
+    }
+
+    // ── Parse optional duration param ────────────────────────────────────────
+    let slotDuration = 30;
+    if (durationParam) {
+      const d = parseInt(durationParam, 10);
+      if (isNaN(d) || d <= 0 || String(d) !== durationParam) {
+        return badRequest('duration must be a positive integer');
+      }
+      if (d % 5 !== 0) {
+        return badRequest('duration must be a multiple of 5');
+      }
+      slotDuration = d;
     }
 
     // ── Resolve day of week from date ───────────────────────────────────────
@@ -85,7 +99,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ slots: [], date, professionalId });
     }
 
-    // ── Step 3: Generate 30-min slots from regular entries ─────────────────
+    // ── Step 3: Generate slots at 30-min granularity from regular entries ───
     const slotEntries: { time: string }[] = [];
 
     for (const entry of regular) {
@@ -116,20 +130,20 @@ export async function GET(request: Request) {
         ),
       );
 
-    // ── Steps 4–6: Compute availability ─────────────────────────────────────
+    // ── Steps 4–6: Compute availability — duration-aware ─────────────────────
     const slots = slotEntries.map((slot) => {
       const slotStart = timeToMinutes(slot.time);
-      const slotEnd = slotStart + 30;
+      const slotEnd = slotStart + slotDuration;
 
-      // Check break ranges
+      // Check break ranges (overlap-aware for duration)
       const inBreak = breaks.some((b) =>
-        isTimeInRange(slotStart, b.startTime, b.endTime),
+        slotsOverlap(slotStart, slotEnd, b.startTime, b.endTime),
       );
       if (inBreak) return { time: slot.time, available: false };
 
-      // Check blocked ranges
+      // Check blocked ranges (overlap-aware for duration)
       const inBlocked = blocked.some((b) =>
-        isTimeInRange(slotStart, b.startTime, b.endTime),
+        slotsOverlap(slotStart, slotEnd, b.startTime, b.endTime),
       );
       if (inBlocked) return { time: slot.time, available: false };
 

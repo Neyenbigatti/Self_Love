@@ -1,20 +1,35 @@
-# Treatment Types API Specification
+# Delta for Treatment Types API
 
-## Purpose
+## ADDED Requirements
 
-CRUD management of treatment types per professional. Each treatment has a name, duration, description, price, category, and active state. Both roles can list; only professionals create, update, or delete.
+### Requirement: Unique Treatment Names
 
-## Requirements
+The system MUST enforce `(professionalId, name)` uniqueness. Two treatment types for the same professional MUST NOT share the same name.
+
+#### Scenario: Duplicate create rejected
+
+- GIVEN professional P1 has a treatment type "Facial"
+- WHEN P1 attempts to create another treatment type named "Facial"
+- THEN the response MUST be 409 Conflict
+
+#### Scenario: Same name allowed for different professionals
+
+- GIVEN professional P1 has a treatment type "Facial"
+- WHEN professional P2 creates a treatment type named "Facial"
+- THEN the response MUST be 201 Created
+
+## MODIFIED Requirements
 
 ### Requirement: List Treatment Types
 
 The system MUST return treatment types, optionally filtered by professional.
+(Previously: response did not include isActive, category, sortOrder)
 
 #### Scenario: List all treatment types for a professional
 
 - GIVEN either a professional or patient is authenticated
 - WHEN they call `GET /api/treatment-types?professionalId={id}`
-- THEN the response MUST include `id`, `professionalId`, `name`, `duration`, `description`, `price`, `isActive`, `category`, and `sortOrder` for each type
+- THEN the response MUST include `id`, `professionalId`, `name`, `duration`, `description`, `price`, `isActive`, `category`, and `sortOrder`
 
 #### Scenario: Patient can list
 
@@ -25,6 +40,7 @@ The system MUST return treatment types, optionally filtered by professional.
 ### Requirement: Create Treatment Type
 
 The system MUST allow professionals to create treatment types with the new fields and enforce unique names per professional.
+(Previously: no isActive, category, sortOrder; no uniqueness check)
 
 #### Scenario: Professional creates with all new fields
 
@@ -45,25 +61,10 @@ The system MUST allow professionals to create treatment types with the new field
 - WHEN they `POST /api/treatment-types` with `{ name: "Facial", duration: 30 }`
 - THEN the response MUST be 409 Conflict
 
-### Requirement: Unique Treatment Names
-
-The system MUST enforce `(professionalId, name)` uniqueness. Two treatment types for the same professional MUST NOT share the same name.
-
-#### Scenario: Duplicate create rejected
-
-- GIVEN professional P1 has a treatment type "Facial"
-- WHEN P1 attempts to create another treatment type named "Facial"
-- THEN the response MUST be 409 Conflict
-
-#### Scenario: Same name allowed for different professionals
-
-- GIVEN professional P1 has a treatment type "Facial"
-- WHEN professional P2 creates a treatment type named "Facial"
-- THEN the response MUST be 201 Created
-
 ### Requirement: Update Treatment Type
 
 The system MUST allow professionals to modify their treatment types. Rename MUST be blocked with 409 when active appointments reference the treatment.
+(Previously: no isActive, category, sortOrder; no rename guard)
 
 #### Scenario: Update fields including new ones
 
@@ -77,25 +78,3 @@ The system MUST allow professionals to modify their treatment types. Rename MUST
 - GIVEN a treatment type with `id={tid}` has active appointments
 - WHEN a professional calls `PATCH /api/treatment-types/{tid}` with `{ name: "New name" }`
 - THEN the response MUST be 409 Conflict
-
-### Requirement: Delete Treatment Type
-
-The system MUST allow deletion only when no appointments reference the treatment type.
-
-#### Scenario: Delete unused treatment type
-
-- GIVEN no appointments reference the treatment type
-- WHEN a professional calls `DELETE /api/treatment-types/{id}`
-- THEN the response MUST be 200 with `{ success: true }`
-
-#### Scenario: Delete treatment type with active appointments
-
-- GIVEN active appointments reference this treatment type
-- WHEN a professional calls `DELETE /api/treatment-types/{id}`
-- THEN the response MUST be 409 Conflict
-
-#### Scenario: Patient cannot delete
-
-- GIVEN a patient is authenticated
-- WHEN they call `DELETE /api/treatment-types/{id}`
-- THEN the response MUST be 403 Forbidden

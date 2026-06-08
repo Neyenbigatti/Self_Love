@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import Link from 'next/link'
@@ -89,11 +89,10 @@ export default function BookAppointmentPage() {
   }, [])
 
   // ── Fetch treatment types when professional is selected ───────────────────
-  useEffect(() => {
+  const fetchTreatments = useCallback(() => {
     if (!selectedProfessional) return
 
     setLoadingTreatments(true)
-    setSelectedTreatment(null)
     setTreatmentTypes([])
 
     fetch(`/api/treatment-types?professionalId=${selectedProfessional.id}`)
@@ -106,6 +105,33 @@ export default function BookAppointmentPage() {
       })
       .finally(() => setLoadingTreatments(false))
   }, [selectedProfessional])
+
+  useEffect(() => {
+    fetchTreatments()
+  }, [fetchTreatments])
+
+  // ── Refetch treatments when tab regains focus (e.g. professional toggled active/inactive) ──
+  useEffect(() => {
+    if (!selectedProfessional) return
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchTreatments()
+      }
+    }
+
+    const handleFocus = () => {
+      fetchTreatments()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibility)
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [fetchTreatments, selectedProfessional])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -141,6 +167,7 @@ export default function BookAppointmentPage() {
           patientId: userId,
           professionalId: selectedProfessional.id,
           treatmentType: selectedTreatment.name,
+          treatmentTypeId: selectedTreatment.id,
           date: format(selectedDate, 'yyyy-MM-dd'),
           startTime: selectedTime,
           endTime,
@@ -417,13 +444,14 @@ export default function BookAppointmentPage() {
             onSlotSelect={handleSlotSelect}
             selectedDate={selectedDate}
             selectedTime={selectedTime}
+            duration={selectedTreatment?.duration}
           />
 
           {/* Continue button */}
           <div className="flex justify-end">
             <Button
               size="lg"
-              disabled={!selectedDate || !selectedTime}
+              disabled={!selectedTreatment || !selectedDate || !selectedTime}
               onClick={handleProceedToConfirm}
             >
               Continuar a Confirmar

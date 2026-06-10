@@ -61,7 +61,8 @@ export function AppointmentHistoryCard({
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Calendar className="size-3.5 shrink-0" />
-                {format(appointment.date, "EEEE, d MMMM yyyy", { locale: es })}
+                <span className="sm:hidden">{format(appointment.date, "EEE d MMM", { locale: es })}</span>
+                <span className="hidden sm:inline">{format(appointment.date, "EEEE, d MMMM yyyy", { locale: es })}</span>
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="size-3.5 shrink-0" />

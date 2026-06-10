@@ -448,9 +448,10 @@ export default function BookAppointmentPage() {
           />
 
           {/* Continue button */}
-          <div className="flex justify-end">
+          <div className="flex flex-col sm:flex-row justify-end gap-2">
             <Button
               size="lg"
+              className="w-full sm:w-auto"
               disabled={!selectedTreatment || !selectedDate || !selectedTime}
               onClick={handleProceedToConfirm}
             >
@@ -524,11 +525,11 @@ export default function BookAppointmentPage() {
             </div>
 
             {/* Book button */}
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={handleBack}>
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+              <Button variant="outline" onClick={handleBack} className="w-full sm:w-auto">
                 Cambiar
               </Button>
-              <Button size="lg" onClick={handleConfirm} disabled={booking}>
+              <Button size="lg" onClick={handleConfirm} disabled={booking} className="w-full sm:w-auto">
                 {booking ? (
                   <>
                     <Loader2 className="mr-2 size-4 animate-spin" />

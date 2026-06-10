@@ -89,7 +89,8 @@ export function AppointmentCard({
             </div>
             <div>
               <p className="font-medium text-foreground">
-                {format(appointment.date, "EEEE, MMMM d, yyyy")}
+                <span className="sm:hidden">{format(appointment.date, "EEE d MMM")}</span>
+                <span className="hidden sm:inline">{format(appointment.date, "EEEE, MMMM d, yyyy")}</span>
               </p>
             </div>
           </div>

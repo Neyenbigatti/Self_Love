@@ -1,8 +1,8 @@
 # SelfLove — Checkpoint Final
 
-**Fecha**: 2026-06-08
-**Commit**: `adbfda0`
-**Working tree**: CLEAN ✅
+**Fecha**: 2026-06-10
+**Commit**: `adbfda0` (working tree con cambios M-01A sin commit)
+**Working tree**: MODIFIED (M-01A pendiente de commit + archive)
 **tsc**: OK ✅
 **Build**: OK ✅
 **Migrations**: 1 (0000_acoustic_blue_marvel.sql) ✅
@@ -31,6 +31,11 @@
 | treatmentTypeId migration (P2A) | P2 — Treatments | `p2-treatment-management` | ✅ ARCHIVED |
 | Backward compatibility (treatmentType string) | P2 — Treatments | `p2-treatment-management` | ✅ ARCHIVED |
 | Auto-refetch on focus/visibility (QA #3 fix) | Portal Paciente | `p2-treatment-management` | ✅ ARCHIVED |
+| Z-index layers (backdrop 45, fab 46, sidebar 50, dialog 60) | Portal Paciente | `m-01a-mobile-foundation` | ✅ READY FOR ARCHIVE |
+| FAB positioning (bottom-6 right-6, sin inline styles) | Portal Paciente | `m-01a-mobile-foundation` | ✅ READY FOR ARCHIVE |
+| Bottom padding pb-20 para clearance del FAB | Portal Paciente | `m-01a-mobile-foundation` | ✅ READY FOR ARCHIVE |
+| Fechas responsive en appointment cards | Portal Paciente | `m-01a-mobile-foundation` | ✅ READY FOR ARCHIVE |
+| CTAs full-width en mobile (Step 2 + Step 3 booking) | Portal Paciente | `m-01a-mobile-foundation` | ✅ READY FOR ARCHIVE |
 
 ---
 

@@ -42,7 +42,7 @@ export default function PatientLayout({
           onMenuToggle={() => setSidebarOpen((prev) => !prev)}
           isMenuOpen={sidebarOpen}
         />
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 pb-20 sm:pb-6">{children}</main>
         <WhatsAppFab />
       </div>
     </div>

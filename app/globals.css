@@ -50,6 +50,12 @@
   --brand-warm-gray: #9E9792;
   --brand-warm-bg: #FAFAF9;
   --brand-warm-border: #E8E4E0;
+
+  /* Z-index layers for mobile overlay management */
+  --z-backdrop: 45;
+  --z-fab: 46;
+  --z-sidebar: 50;
+  --z-dialog: 60;
 }
 
 .dark {

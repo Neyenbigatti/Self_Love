@@ -63,9 +63,10 @@ export default function PatientDashboardPage() {
     }
   }
 
-  const now = new Date()
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
   const upcoming = appointments.filter(
-    (apt) => apt.date >= now && apt.status !== 'cancelled',
+    (apt) => apt.date >= today && apt.status !== 'cancelled',
   )
 
   if (loading) {

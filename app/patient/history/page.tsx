@@ -66,9 +66,10 @@ export default function PatientHistoryPage() {
     loadAppointments()
   }, [])
 
-  const now = new Date()
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
   const history = appointments.filter(
-    (apt) => apt.date < now || apt.status === 'completed' || apt.status === 'cancelled',
+    (apt) => apt.date < today || apt.status === 'completed' || apt.status === 'cancelled',
   )
   // Most recent first
   const sorted = [...history].sort((a, b) => b.date.getTime() - a.date.getTime())

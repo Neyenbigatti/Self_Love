@@ -13,12 +13,16 @@ export const photoSchema = z.object({
 });
 
 // ─── Create ────────────────────────────────────────────────────────────────────
+// Supports both legacy (skinEvaluation/facialAnalysis) and v2 (templateId/responses) paths.
+// If templateId is provided, store in responses and null out legacy columns.
 
 export const createExplorationSchema = z.object({
   patientId: z.string().min(1, 'Patient is required'),
   date: dateStringSchema,
   skinEvaluation: z.record(z.unknown()).optional(),
   facialAnalysis: z.record(z.unknown()).optional(),
+  templateId: z.string().optional(),
+  responses: z.record(z.unknown()).optional(),
   notes: z.string().optional(),
   photos: z.array(photoSchema).optional(),
 });
@@ -30,6 +34,8 @@ export const updateExplorationSchema = z.object({
   date: dateStringSchema.optional(),
   skinEvaluation: z.record(z.unknown()).optional(),
   facialAnalysis: z.record(z.unknown()).optional(),
+  templateId: z.string().optional(),
+  responses: z.record(z.unknown()).optional(),
   notes: z.string().optional(),
   photos: z.array(photoSchema).optional(),
 });

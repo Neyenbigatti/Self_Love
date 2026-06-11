@@ -7,11 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { FacialAnalysisForm } from "@/components/exploration/facial-diagram";
 import { SkinEvaluationForm } from "@/components/exploration/skin-evaluation";
 import { PhotoCapture } from "@/components/exploration/photo-capture";
+import { DynamicForm } from "@/components/exploration/dynamic-form";
 import { toast } from "sonner";
-import type { FacialAnalysis, ExplorationPhoto, SkinEvaluationData } from "@/lib/types";
+import type { FacialAnalysis, ExplorationPhoto, SkinEvaluationData, TemplateConfig } from "@/lib/types";
 import { format } from "date-fns";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -30,8 +33,10 @@ interface ExplorationResponse {
   id: string;
   patientId: string;
   professionalId: string;
+  templateId: string | null;
   skinEvaluation: SkinEvaluationData | null;
   facialAnalysis: Partial<FacialAnalysis> | null;
+  responses: Record<string, any> | null;
   notes: string | null;
   date: string;
   photos: ExplorationPhoto[];
@@ -52,6 +57,26 @@ function getInitials(name: string) {
 
 function todayStr() {
   return new Date().toISOString().split("T")[0];
+}
+
+// ─── Notes Card (shared between v2 and legacy) ──────────────────────────────────
+
+function NotesCard({ notes, onChange }: { notes: string; onChange: (v: string) => void }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Notas Clínicas</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Textarea
+          value={notes}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Ingresá notas clínicas..."
+          rows={4}
+        />
+      </CardContent>
+    </Card>
+  );
 }
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
@@ -82,6 +107,12 @@ export default function PhysicalExplorationPage() {
   const [notes, setNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  // ── Template / v2 state ────────────────────────────────────────────────────
+  const [template, setTemplate] = useState<{ id: string; config: TemplateConfig } | null>(null);
+  const [responses, setResponses] = useState<Record<string, any>>({});
+
+  const isV2Mode = template !== null;
+
   // ── Fetch patients on mount ────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
@@ -107,7 +138,7 @@ export default function PhysicalExplorationPage() {
     return () => { cancelled = true; };
   }, []);
 
-  // ── Fetch exploration when patient changes ─────────────────────────────────
+  // ── Fetch exploration + template when patient changes ──────────────────────
   useEffect(() => {
     if (!selectedPatientId) {
       resetForm();
@@ -123,23 +154,74 @@ export default function PhysicalExplorationPage() {
       setExplorationError(null);
 
       try {
-        const res = await fetch(
-          `/api/explorations?patientId=${encodeURIComponent(selectedPatientId)}`,
-        );
-        if (!res.ok) throw new Error("Error al cargar exploración");
-        const data = await res.json();
+        // Fetch exploration and templates in parallel
+        const [expRes, templatesRes] = await Promise.all([
+          fetch(
+            `/api/explorations?patientId=${encodeURIComponent(selectedPatientId)}`,
+          ),
+          fetch("/api/exploration-templates").catch(() => null),
+        ]);
 
         if (cancelled) return;
+
+        if (!expRes.ok) throw new Error("Error al cargar exploración");
+        const data = await expRes.json();
+
+        const templates =
+          templatesRes?.ok ? (await templatesRes.json()).templates ?? [] : [];
 
         if (data.explorations && data.explorations.length > 0) {
           const exp: ExplorationResponse = data.explorations[0];
           setExplorationId(exp.id);
-          setSkinEvaluation(exp.skinEvaluation ?? {});
-          setFacialAnalysis(exp.facialAnalysis ?? {});
-          setPhotos(exp.photos ?? []);
-          setNotes(exp.notes ?? "");
+
+          // v2 mode detection
+          if (exp.templateId && exp.responses) {
+            const activeTemplate = templates.find(
+              (t: any) => t.id === exp.templateId,
+            );
+            if (activeTemplate) {
+              setTemplate({
+                id: activeTemplate.id,
+                config: activeTemplate.config as TemplateConfig,
+              });
+            } else {
+              setTemplate(null);
+            }
+            setResponses(exp.responses);
+            setSkinEvaluation({});
+            setFacialAnalysis(exp.facialAnalysis ?? {});
+            setPhotos(exp.photos ?? []);
+            setNotes(exp.notes ?? "");
+          } else {
+            // legacy mode
+            setTemplate(null);
+            setResponses({});
+            setSkinEvaluation(exp.skinEvaluation ?? {});
+            setFacialAnalysis(exp.facialAnalysis ?? {});
+            setPhotos(exp.photos ?? []);
+            setNotes(exp.notes ?? "");
+          }
         } else {
-          resetForm();
+          // No existing exploration — use default template for new explorations
+          const defaultTemplate =
+            templates.find((t: any) => t.slug === "facial-exploration") ??
+            templates[0] ??
+            null;
+          if (defaultTemplate) {
+            setTemplate({
+              id: defaultTemplate.id,
+              config: defaultTemplate.config as TemplateConfig,
+            });
+            setResponses({});
+          } else {
+            setTemplate(null);
+            setResponses({});
+          }
+          setSkinEvaluation({});
+          setFacialAnalysis({});
+          setPhotos([]);
+          setNotes("");
+          setExplorationId(null);
         }
       } catch (err) {
         if (!cancelled) {
@@ -166,6 +248,8 @@ export default function PhysicalExplorationPage() {
   // ── Reset form ─────────────────────────────────────────────────────────────
   const resetForm = useCallback(() => {
     setExplorationId(null);
+    setTemplate(null);
+    setResponses({});
     setSkinEvaluation({});
     setFacialAnalysis({});
     setPhotos([]);
@@ -178,14 +262,46 @@ export default function PhysicalExplorationPage() {
 
     setIsSaving(true);
 
-    const body = {
-      patientId: selectedPatientId,
-      date: todayStr(),
-      skinEvaluation,
-      facialAnalysis,
-      notes,
-      photos,
-    };
+    let body: Record<string, any>;
+
+    if (isV2Mode && template) {
+      // v2 save: merge responses with existing DB data to preserve orphans
+      let existingResponses: Record<string, any> = {};
+
+      if (explorationId) {
+        try {
+          const getRes = await fetch(`/api/explorations/${explorationId}`);
+          if (getRes.ok) {
+            const getData = await getRes.json();
+            existingResponses = getData.exploration?.responses ?? {};
+          }
+        } catch {
+          // If fetch fails, use current responses as-is
+        }
+      }
+
+      const mergedResponses = { ...existingResponses, ...responses };
+
+      body = {
+        patientId: selectedPatientId,
+        date: todayStr(),
+        templateId: template.id,
+        responses: mergedResponses,
+        facialAnalysis,
+        notes,
+        photos,
+      };
+    } else {
+      // legacy save
+      body = {
+        patientId: selectedPatientId,
+        date: todayStr(),
+        skinEvaluation,
+        facialAnalysis,
+        notes,
+        photos,
+      };
+    }
 
     try {
       let res: Response;
@@ -393,38 +509,56 @@ export default function PhysicalExplorationPage() {
               </p>
             </CardContent>
           </Card>
+        ) : isV2Mode && template ? (
+          <>
+            <DynamicForm
+              config={template.config}
+              responses={responses}
+              onResponsesChange={setResponses}
+              facialAnalysis={facialAnalysis}
+              onFacialAnalysisChange={setFacialAnalysis}
+              photos={photos}
+              onPhotosChange={setPhotos}
+            />
+            {/* Notes — always visible */}
+            <NotesCard notes={notes} onChange={setNotes} />
+          </>
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="skin">Evaluación de Piel</TabsTrigger>
-              <TabsTrigger value="facial">Análisis Facial</TabsTrigger>
-              <TabsTrigger value="photos">Documentación Fotográfica</TabsTrigger>
-            </TabsList>
+          <>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="skin">Evaluación de Piel</TabsTrigger>
+                <TabsTrigger value="facial">Análisis Facial</TabsTrigger>
+                <TabsTrigger value="photos">Documentación Fotográfica</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="skin" className="mt-6">
-              <SkinEvaluationForm
-                key={explorationKey}
-                initialData={skinEvaluation as Partial<SkinEvaluationData>}
-                onChange={(data) => setSkinEvaluation(data)}
-              />
-            </TabsContent>
+              <TabsContent value="skin" className="mt-6">
+                <SkinEvaluationForm
+                  key={explorationKey}
+                  initialData={skinEvaluation as Partial<SkinEvaluationData>}
+                  onChange={(data) => setSkinEvaluation(data)}
+                />
+              </TabsContent>
 
-            <TabsContent value="facial" className="mt-6">
-              <FacialAnalysisForm
-                key={explorationKey}
-                initialData={facialAnalysis}
-                onChange={setFacialAnalysis}
-              />
-            </TabsContent>
+              <TabsContent value="facial" className="mt-6">
+                <FacialAnalysisForm
+                  key={explorationKey}
+                  initialData={facialAnalysis}
+                  onChange={setFacialAnalysis}
+                />
+              </TabsContent>
 
-            <TabsContent value="photos" className="mt-6">
-              <PhotoCapture
-                key={explorationKey}
-                photos={photos}
-                onPhotosChange={setPhotos}
-              />
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="photos" className="mt-6">
+                <PhotoCapture
+                  key={explorationKey}
+                  photos={photos}
+                  onPhotosChange={setPhotos}
+                />
+              </TabsContent>
+            </Tabs>
+            {/* Notes — always visible */}
+            <NotesCard notes={notes} onChange={setNotes} />
+          </>
         )
       ) : (
         <Card>

@@ -155,3 +155,40 @@ export interface DaySchedule {
   slots: TimeSlot[];
   appointments: Appointment[];
 }
+
+// ─── Exploration Templates ──────────────────────────────────────────────────────
+
+export interface TemplateField {
+  key: string;
+  label: string;
+  type: 'text' | 'textarea' | 'boolean' | 'number' | 'date' | 'select' | 'multiselect';
+  options?: string[];
+  required?: boolean;
+  sortOrder: number;
+  isActive?: boolean;
+  system?: boolean;
+}
+
+export interface ExplorationSection {
+  id: string;
+  title: string;
+  fields: TemplateField[];
+}
+
+export interface WidgetsConfig {
+  facialDiagram?: boolean;
+  photoCapture?: boolean;
+}
+
+export interface TemplateConfig {
+  sections: ExplorationSection[];
+  widgets?: WidgetsConfig;
+}
+
+export interface ExplorationResponseV2 {
+  templateId: string | null;
+  responses: Record<string, any> | null;
+  facialAnalysis: Partial<FacialAnalysis> | null;
+  photos: ExplorationPhoto[];
+  notes: string | null;
+}

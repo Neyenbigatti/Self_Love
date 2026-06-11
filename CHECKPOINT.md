@@ -2,7 +2,7 @@
 
 **Fecha**: 2026-06-11
 **Commit**: `bbb0f58` — P3.1 PR #1 Foundation: exploration_templates, clinical_notes, explorations v2
-**Working tree**: CLEAN ✅
+**Working tree**: CLEAN ✅ (PR #2 sin mergear — cambios locales sin commit)
 **tsc**: OK ✅
 **Build**: OK ✅
 **Migrations**: 2 (0000 + 0001_exploration_templates) ✅
@@ -40,6 +40,12 @@
 | Clinical Notes (schema + CRUD API) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #1 COMPLETE |
 | Explorations schema v2 (template_id + responses + legacy compat) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #1 COMPLETE |
 | Lazy auto-seed: plantilla "Exploración Física Facial" | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #1 COMPLETE |
+| DynamicForm + FieldRenderer (7 field types: text, textarea, boolean, number, date, select, multiselect) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #2 COMPLETE |
+| DynamicForm desde template.config con secciones como Cards + sortOrder | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #2 COMPLETE |
+| Widgets condicionales: FacialDiagram + PhotoCapture toggle por config | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #2 COMPLETE |
+| Fallback legacy: exploraciones sin templateId usan tabs originales | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #2 COMPLETE |
+| Merge save: responses mergeados con datos existentes preservan campos huérfanos | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #2 COMPLETE |
+| Template por defecto para exploraciones nuevas (slug "facial-exploration") | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #2 COMPLETE |
 
 ---
 
@@ -77,7 +83,7 @@
 
 | ID | Descripción | Tipo | Estado |
 |----|------------|------|--------|
-| P3.1 | **Exploration Templates & Clinical History Integration** — sistema de plantillas configurables para exploración física, Dynamic Form Renderer, admin de campos desde Configuración, Clinical Notes, Historial Clínico como hub | Feature | En Progreso — PR #1 ✅ / PR #2 NEXT |
+| P3.1 | **Exploration Templates & Clinical History Integration** — sistema de plantillas configurables para exploración física, Dynamic Form Renderer, admin de campos desde Configuración, Clinical Notes, Historial Clínico como hub | Feature | En Progreso — PR #1 ✅ / PR #2 ✅ / PR #3 NEXT |
 | M-01A | **Mobile Compatibility Foundation (Lite)** — z-index layers, responsive dates, CTAs full-width, FAB clearance | Mejora | ✅ Ready for Archive |
 | UX-01..08 | Mejoras UX (detalle en sección 3) | UX | Backlog |
 | ~~BUG-PORTAL-01~~ | ~~Inicio del paciente no refleja turnos correctamente~~ | ~~Bug~~ | ~~FIXED ✅~~ |
@@ -105,8 +111,8 @@ Paciente
 | PR | Nombre | Estado |
 |----|--------|--------|
 | **PR #1** | Foundation: schema + seed + APIs (exploration_templates, clinical_notes, explorations v2) | ✅ **COMPLETE** — mergeado a main |
-| **PR #2** | Dynamic Form Renderer + Exploration API v2 | 🔜 **NEXT** |
-| **PR #3** | Admin UI: Template Field Editor (Configuración) | 📋 Pendiente |
+| **PR #2** | Dynamic Form Renderer + Exploration API v2 | ✅ **COMPLETE** — sin mergear |
+| **PR #3** | Admin UI: Template Field Editor (Configuración) | 🔜 **NEXT** |
 | **PR #4** | Clinical Notes UI + API Evolution | 📋 Pendiente |
 
 **PR #1 — Foundation** (7 commits, 15 archivos):
@@ -125,7 +131,13 @@ Paciente
 - Seed lazy en GET, no en migración ni paso manual
 - Tipos de campo: text, textarea, boolean, number, date, select, multiselect
 
-**Próximo PR (PR #2)**: Dynamic Form Renderer que renderiza fields desde template config, widget FacialDiagram + PhotoCapture como componentes integrados, Exploration page adaptada al nuevo modelo.
+**PR #2 — Dynamic Form Renderer** (implementado, sin mergear):
+- `FieldRenderer` — 7 tipos de campo (text, textarea, boolean, number, date, select, multiselect)
+- `DynamicForm` — renderiza secciones como Cards con sortOrder, widgets condicionales (FacialDiagram, PhotoCapture)
+- Exploration page detecta v2 vs legacy: DynamicForm para exploraciones nuevas/con template, tabs legacy para históricas
+- Merge save: `{ ...existingResponses, ...currentResponses }` preserva campos huérfanos
+- Template por defecto desde slug "facial-exploration" con fallback a `templates[0]`
+- Legacy compatible: datos seed históricos siguen funcionando sin cambios
 
 ---
 
@@ -154,7 +166,7 @@ selflove/
 │       └── history/      -> Appointment history
 │
 ├── components/
-│   ├── exploration/     -> FacialDiagram, PhotoCapture, SkinEvaluation (legacy)
+│   ├── exploration/     -> DynamicForm, FieldRenderer, FacialDiagram, PhotoCapture, SkinEvaluation (legacy)
 │   ├── dashboard/       -> Sidebar, Header, widgets
 │   ├── patient-portal/  -> PatientSidebar, BookingCalendar, etc.
 │   ├── patients/        -> Patient list, detail, medical/treatment tabs
@@ -188,30 +200,31 @@ selflove/
 | Indicador | Valor |
 |-----------|-------|
 | Último commit | `bbb0f58` — P3.1 PR #1 Foundation |
-| Working tree | ✅ CLEAN |
+| Working tree | ✅ CLEAN (PR #2 implementado, cambios sin commitear) |
 | Ahead of origin | `origin/main` en sincronía |
 | tsc | ✅ Sin errores |
 | Build | ✅ Pass (Next.js 16.2.6, Turbopack) |
 | Migraciones | 2 aplicadas (0000 + 0001_exploration_templates) |
 | Openspec | config.yaml + 6 specs + active change `p3-1-exploration-templates` + 2 archived |
 
-**Consistente para continuar PR #2.** ✅
+**Consistente para continuar PR #3.** ✅
 
 ---
 
 ## 7. Próxima Recomendación
 
-**Continuar P3.1 — PR #2: Dynamic Form Renderer + Exploration API v2**
+**Continuar P3.1 — PR #3: Admin UI — Template Field Editor (Configuración)**
 
 *Qué incluye*:
-- `DynamicForm` component que renderiza fields desde `template.config`
-- `FieldRenderer` para los 7 tipos de campo (text, textarea, boolean, number, date, select, multiselect)
-- Widgets pre-armados: FacialDiagram + PhotoCapture como partes del form dinámico
-- `app/dashboard/exploration/page.tsx` adaptada para usar dynamic form cuando hay template activo
-- Legacy fallback: si no hay template, se usa el renderer anterior (SkinEvaluationForm + FacialAnalysisForm)
-- `responses` como mecanismo de guardado para exploraciones template-driven
+- Settings route con editor de plantilla facial
+- Modal o panel inline para add/edit/delete/reorder campos
+- Edición de secciones (título, orden)
+- Soporte para los 7 tipos de campo (text, textarea, boolean, number, date, select, multiselect)
+- Config de widgets (facialDiagram toggle, photoCapture toggle)
+- Guardar cambios en config JSON via `PUT /api/exploration-templates/facial-exploration`
+- Requisito: solo la template "Exploración Física Facial" en esta PR (multi-template en futura iteración)
 
-*Prerrequisito*: PR #1 ya mergeado a main ✅
+*Prerrequisitos*: PR #1 ✅ (mergeado), PR #2 ✅ (implementado, sin mergear)
 
 ---
 

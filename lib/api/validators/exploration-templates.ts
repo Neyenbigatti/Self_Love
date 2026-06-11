@@ -21,6 +21,8 @@ export const templateConfigFieldSchema = z.object({
   options: z.array(z.string()).optional(),
   required: z.boolean().optional(),
   sortOrder: z.number().int().min(0),
+  isActive: z.boolean().optional(),
+  system: z.boolean().optional(),
 });
 
 export const templateConfigSectionSchema = z.object({

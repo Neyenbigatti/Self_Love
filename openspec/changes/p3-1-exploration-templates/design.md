@@ -15,6 +15,47 @@ Add `exploration_templates` and `clinical_notes` tables + API routes using exist
 | Manual seed vs lazy auto-seed | Manual seed adds friction for new environments; coupling seed to `db:push` mixes infra with business data | **Lazy auto-seed on read** — `ensureDefaultExplorationTemplate()` checks if slug exists at the start of GET template endpoints; inserts if missing. No manual step, no coupling to migrations. |
 | Clinical notes vs embedded in exploration | Notes are free-text, not template-driven; separate table avoids bloating explorations with unstructured data | **Separate table** — cleaner querying, professional-ownership filter, independent lifecycle |
 | Patient-scoped routes (`/api/patients/[id]/clinical-notes`) vs flat | Clinical notes belong to a patient — nesting in patient routes makes ownership explicit and consistent with existing `clinical-history` | **Nested routes** — follows `patients/[id]/clinical-notes` pattern |
+| Handling historical explorations when template changes | If DynamicForm only sends visible fields, orphaned response data is lost on re-save | **Snapshot merge on save** — merge new form values with existing responses: `{ ...existing.responses, ...formValues }`. Orphaned fields (present in responses but removed from template) persist in DB and are preserved across saves. |
+
+### Historical Exploration Behavior (PR #2 — DynamicForm)
+
+**Principio**: `responses` es un snapshot histórico por exploración. Cambios posteriores en la plantilla NO deben invalidar ni ocultar datos previamente guardados.
+
+**Comportamiento al leer una exploración existente:**
+
+| Escenario | Template actual | responses guardados | Comportamiento DynamicForm |
+|---|---|---|---|
+| Campo existe en ambos | ✅ Tiene field X | ✅ Tiene valor X | Renderiza field X, popula con valor guardado |
+| Campo nuevo (no existía al guardar) | ✅ Tiene field Y | ❌ Sin valor Y | Renderiza field Y vacío (la profesional lo completa si quiere) |
+| Campo eliminado de template | ❌ Sin field Z | ✅ Tiene valor Z | No renderiza field Z. Dato preservado en DB, no visible en form |
+| Campo modificado (tipo cambió) | ✅ Tiene field X (type: select) | ✅ Valor de cuando era text | Renderiza field X con nuevo tipo. Valor legacy se muestra si el formato es compatible; si no, el campo se renderiza vacío |
+
+**Comportamiento al guardar una exploración existente:**
+
+```typescript
+// Merge: preserva campos huérfanos, actualiza campos visibles
+const mergedResponses = {
+  ...existingExploration.responses,  // Datos históricos completos
+  ...currentFormValues,              // Campos visibles en el formulario actual
+};
+
+await fetch(`/api/explorations/${id}`, {
+  method: 'PATCH',
+  body: JSON.stringify({
+    templateId: currentTemplateId,
+    responses: mergedResponses, // Merge completo
+    facialAnalysis,
+    photos,
+    notes,
+  }),
+});
+```
+
+Este merge garantiza que:
+- Campos eliminados de la plantilla NO se pierden al re-guardar
+- Campos nuevos de la plantilla aparecen vacíos (no afectan datos históricos)
+- Campos existentes se actualizan normalmente
+- La exploración siempre se puede visualizar sin errores aunque la plantilla haya cambiado
 
 ## Data Flow
 

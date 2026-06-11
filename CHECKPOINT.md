@@ -1,11 +1,11 @@
 # SelfLove — Checkpoint Final
 
-**Fecha**: 2026-06-10
-**Commit**: `adbfda0` (working tree con cambios M-01A sin commit)
-**Working tree**: MODIFIED (M-01A pendiente de commit + archive)
+**Fecha**: 2026-06-11
+**Commit**: `bbb0f58` — P3.1 PR #1 Foundation: exploration_templates, clinical_notes, explorations v2
+**Working tree**: CLEAN ✅
 **tsc**: OK ✅
 **Build**: OK ✅
-**Migrations**: 1 (0000_acoustic_blue_marvel.sql) ✅
+**Migrations**: 2 (0000 + 0001_exploration_templates) ✅
 
 ---
 
@@ -36,6 +36,10 @@
 | Bottom padding pb-20 para clearance del FAB | Portal Paciente | `m-01a-mobile-foundation` | ✅ READY FOR ARCHIVE |
 | Fechas responsive en appointment cards | Portal Paciente | `m-01a-mobile-foundation` | ✅ READY FOR ARCHIVE |
 | CTAs full-width en mobile (Step 2 + Step 3 booking) | Portal Paciente | `m-01a-mobile-foundation` | ✅ READY FOR ARCHIVE |
+| Exploration Templates system (table + config JSON) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #1 COMPLETE |
+| Clinical Notes (schema + CRUD API) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #1 COMPLETE |
+| Explorations schema v2 (template_id + responses + legacy compat) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #1 COMPLETE |
+| Lazy auto-seed: plantilla "Exploración Física Facial" | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #1 COMPLETE |
 
 ---
 
@@ -73,52 +77,55 @@
 
 | ID | Descripción | Tipo | Estado |
 |----|------------|------|--------|
-| P3.1 | **Exploration Templates & Clinical History Integration** — Historial Clínico como hub central, exploraciones como registros clínicos, sistema de plantillas configurables | Feature | Pendiente |
+| P3.1 | **Exploration Templates & Clinical History Integration** — sistema de plantillas configurables para exploración física, Dynamic Form Renderer, admin de campos desde Configuración, Clinical Notes, Historial Clínico como hub | Feature | En Progreso — PR #1 ✅ / PR #2 NEXT |
 | M-01A | **Mobile Compatibility Foundation (Lite)** — z-index layers, responsive dates, CTAs full-width, FAB clearance | Mejora | ✅ Ready for Archive |
 | UX-01..08 | Mejoras UX (detalle en sección 3) | UX | Backlog |
 | ~~BUG-PORTAL-01~~ | ~~Inicio del paciente no refleja turnos correctamente~~ | ~~Bug~~ | ~~FIXED ✅~~ |
 
 ---
 
-### P3.1 — Detalle de Requerimientos (Registrado 2026-06-10)
+### P3.1 — Estado Actual (Actualizado 2026-06-11)
 
-**Cambio de dirección**: La Exploración Física NO evoluciona como módulo independiente. Pasa a ser un tipo de registro clínico dentro del Historial Clínico.
+**Dirección arquitectónica**: Historial Clínico como hub central. Exploración Física como tipo de registro clínico. Sistema de plantillas configurables editables por la profesional.
 
-**Visión**: 
+**Visión objetivo**:
 ```
 Paciente
 └── Historial Clínico
-    ├── Resumen
-    ├── Exploraciones
+    ├── Exploraciones (template-driven)
     ├── Fotografías
     ├── Análisis Facial
     ├── Tratamientos realizados
-    ├── Evolución clínica
-    └── Observaciones
+    ├── Notas Clínicas
+    └── Evolución clínica
 ```
 
-**Requerimientos funcionales**:
-- Plantillas de exploración reutilizables (Facial, Corporal, Capilar, Seguimiento, Post-tratamiento, Personalizada)
-- Formularios dinámicos con campos configurables (texto corto/largo, sí/no, número, fecha, selección única/múltiple)
-- Plantilla inicial: "Exploración Física Facial" con datos de piel, evaluación clínica, antecedentes, evaluación profesional
-- Exploraciones guardadas aparecen en el Historial Clínico por fecha
-- Arquitectura preparada para futuras comparativas de evolución clínica
-- Admin de plantillas como capacidad futura en Configuración
+**División en PRs**:
 
-**Compatibilidad obligatoria**:
-- Mantener exploraciones existentes
-- Mantener fotografías existentes
-- Mantener análisis facial existente
-- Mantener datos actuales
+| PR | Nombre | Estado |
+|----|--------|--------|
+| **PR #1** | Foundation: schema + seed + APIs (exploration_templates, clinical_notes, explorations v2) | ✅ **COMPLETE** — mergeado a main |
+| **PR #2** | Dynamic Form Renderer + Exploration API v2 | 🔜 **NEXT** |
+| **PR #3** | Admin UI: Template Field Editor (Configuración) | 📋 Pendiente |
+| **PR #4** | Clinical Notes UI + API Evolution | 📋 Pendiente |
 
-**Fuera de alcance inicial**:
-- Comparativas automáticas de evolución
-- Gráficos clínicos
-- Firma digital / Exportación PDF
-- Compartir exploraciones con pacientes
-- Constructor visual avanzado de formularios
+**PR #1 — Foundation** (7 commits, 15 archivos):
+- `exploration_templates` table con config JSON (sections + fields + widgets)
+- `clinical_notes` table (id, patientId, professionalId, date, content)
+- Explorations v2: columnas `template_id` (FK) + `responses` (JSON)
+- Compatibilidad legacy: `skin_evaluation`/`facial_analysis` se mantienen
+- Lazy auto-seed: `ensureDefaultExplorationTemplate()` inserta plantilla facial al primer GET
+- APIs: templates CRUD, clinical notes CRUD, explorations v2
+- Seed: plantilla "Exploración Física Facial" con 9 secciones y 28+ campos
+- `is_system=true`: protege contra DELETE y cambios de slug, NO bloquea edición de config
 
-**Flujo SDD planificado**: Discovery → Proposal → Specs → Design → Tasks → Estimación → QA Plan
+**Principios de diseño**:
+- `responses` son snapshot por exploración — modificar template no afecta datos históricos
+- System templates: config-editables, delete-protected
+- Seed lazy en GET, no en migración ni paso manual
+- Tipos de campo: text, textarea, boolean, number, date, select, multiselect
+
+**Próximo PR (PR #2)**: Dynamic Form Renderer que renderiza fields desde template config, widget FacialDiagram + PhotoCapture como componentes integrados, Exploration page adaptada al nuevo modelo.
 
 ---
 
@@ -128,42 +135,51 @@ Paciente
 selflove/
 ├── app/
 │   ├── api/
-│   │   ├── auth/me -> GET user session + professionals
-│   │   ├── appointments/ -> CRUD appointments (treatmentTypeId + treatmentType string)
-│   │   ├── availability/ -> CRUD availability rules + slots generation
+│   │   ├── auth/ -> login, logout, register, me
+│   │   ├── appointments/ -> CRUD appointments
+│   │   ├── availability/ -> CRUD availability + slots generation
+│   │   ├── exploration-templates/ -> (NUEVO) GET list, GET by slug, PUT update
+│   │   ├── explorations/ -> CRUD explorations (v2: template_id + responses)
+│   │   ├── patients/ -> Patient CRUD + clinical-history + medical-history + clinical-notes (NUEVO)
 │   │   └── treatment-types/ -> CRUD treatment types (P2)
 │   ├── dashboard/        -> Professional dashboard
 │   │   ├── availability/ -> Availability management (P1)
-│   │   ├── appointments/ -> Appointment management
+│   │   ├── calendar/     -> Appointment calendar
+│   │   ├── clinical-history/ -> Historial Clínico
+│   │   ├── exploration/  -> Exploración Física
+│   │   ├── patients/     -> Patient management
 │   │   └── treatments/   -> Treatment management (P2)
 │   └── patient/          -> Patient portal
-│       ├── book/         -> Booking flow (3-step: treatment → datetime → confirm)
-│       └── page.tsx      -> Inicio + Historial
+│       ├── book/         -> Booking flow (3-step)
+│       └── history/      -> Appointment history
 │
 ├── components/
-│   ├── ui/               -> shadcn/ui primitives
-│   ├── patient-portal/   -> PatientSidebar, PatientTopbar, WhatsAppFab, BookingCalendar
-│   └── availability/     -> Availability configuration components
+│   ├── exploration/     -> FacialDiagram, PhotoCapture, SkinEvaluation (legacy)
+│   ├── dashboard/       -> Sidebar, Header, widgets
+│   ├── patient-portal/  -> PatientSidebar, BookingCalendar, etc.
+│   ├── patients/        -> Patient list, detail, medical/treatment tabs
+│   └── ui/              -> shadcn/ui primitives
 │
 ├── lib/
-│   ├── db/               -> Drizzle schema + migrations (SQLite/Turso)
-│   ├── auth/             -> JWT auth
-│   ├── api/              -> Validators, errors, auth-guard
-│   └── availability/     -> Overlap detection logic
+│   ├── db/              -> Drizzle schema (explorations v2 + 2 new tables) + migrations (2)
+│   ├── auth/            -> JWT auth
+│   ├── api/             -> Validators (incl. nuevos), errors, auth-guard, helpers
+│   └── availability/    -> Overlap detection logic
 │
 └── openspec/
     ├── config.yaml       -> SDD project config
-    ├── specs/            -> Source of truth (merged specs)
-    │   ├── availability-api/
-    │   ├── availability-management/
-    │   ├── appointments-api/
-    │   ├── patients-api/
-    │   ├── slots-api/
-    │   └── treatment-types-api/
-    └── changes/archive/  -> Archived SDD changes
-        ├── p1-availability-management/
-        └── p2-treatment-management/
+    ├── specs/            -> Source of truth (6 main specs)
+    ├── changes/
+    │   ├── p3-1-exploration-templates/ -> Active change (proposal, 3 specs, design, tasks)
+    │   └── archive/      -> P1, P2 archived
 ```
+
+**Nuevas tablas**:
+- `exploration_templates` — id, professionalId, name, slug, description, config (JSON), isActive, isSystem, createdAt, updatedAt
+- `clinical_notes` — id, patientId, professionalId, date, content, createdAt, updatedAt
+
+**Tablas modificadas**:
+- `explorations` — +template_id (FK), +responses (JSON). skin_evaluation/facial_analysis legacy se mantienen.
 
 ---
 
@@ -171,33 +187,31 @@ selflove/
 
 | Indicador | Valor |
 |-----------|-------|
-| Último commit | `adbfda0` — Gestión de Tratamientos Implementado |
-| Working tree | MODIFIED — cambios M-01A sin commit (+20 -11 líneas en 7 archivos) |
-| tsc | ✅ Pasa sin errores |
-| Build | ✅ Pasa (Next.js 16.2.6, Turbopack) |
-| Migraciones | 1 aplicada (0000) |
-| Openspec | config.yaml + 6 specs en `specs/` + 2 archived changes |
+| Último commit | `bbb0f58` — P3.1 PR #1 Foundation |
+| Working tree | ✅ CLEAN |
+| Ahead of origin | `origin/main` en sincronía |
+| tsc | ✅ Sin errores |
+| Build | ✅ Pass (Next.js 16.2.6, Turbopack) |
+| Migraciones | 2 aplicadas (0000 + 0001_exploration_templates) |
+| Openspec | config.yaml + 6 specs + active change `p3-1-exploration-templates` + 2 archived |
 
-**Consistente para continuar desarrollo futuro.** ✅
+**Consistente para continuar PR #2.** ✅
 
 ---
 
 ## 7. Próxima Recomendación
 
-**Abrir P3.1 — Exploration Templates & Clinical History Integration**
+**Continuar P3.1 — PR #2: Dynamic Form Renderer + Exploration API v2**
 
-*Justificación*: La Exploración Física existente (implementada sin SDD) necesita evolucionar hacia un sistema de plantillas reutilizables integrado en el Historial Clínico como hub central. Es la funcionalidad core de la profesional.
+*Qué incluye*:
+- `DynamicForm` component que renderiza fields desde `template.config`
+- `FieldRenderer` para los 7 tipos de campo (text, textarea, boolean, number, date, select, multiselect)
+- Widgets pre-armados: FacialDiagram + PhotoCapture como partes del form dinámico
+- `app/dashboard/exploration/page.tsx` adaptada para usar dynamic form cuando hay template activo
+- Legacy fallback: si no hay template, se usa el renderer anterior (SkinEvaluationForm + FacialAnalysisForm)
+- `responses` como mecanismo de guardado para exploraciones template-driven
 
-*Flujo planificado*:
-1. Discovery (exploración del código existente)
-2. Proposal
-3. Specs
-4. Design
-5. Tasks + Estimación
-6. QA Plan
-7. Apply + Verify + Archive
-
-*Prerrequisito*: Archivar M-01A (pendiente de commit y archive formal)
+*Prerrequisito*: PR #1 ya mergeado a main ✅
 
 ---
 

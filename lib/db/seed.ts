@@ -15,7 +15,17 @@
 import { randomUUID } from 'node:crypto';
 import { hashSync } from 'bcryptjs';
 import { db } from './client';
-import { users, appointments, availability, treatmentTypes, explorations, explorationPhotos, medicalHistories } from './schema';
+import {
+  users,
+  appointments,
+  availability,
+  treatmentTypes,
+  explorations,
+  explorationPhotos,
+  medicalHistories,
+  explorationTemplates,
+} from './schema';
+import { eq } from 'drizzle-orm';
 import {
   addDays,
   startOfWeek,
@@ -38,6 +48,159 @@ function weekStart() {
 
 function formatDate(date: Date): string {
   return date.toISOString().split('T')[0];
+}
+
+// ─── Facial Exploration Template Config ─────────────────────────────────────────
+// Shared seed config for the "Exploración Física Facial" system template.
+
+const facialExplorationConfig: Record<string, unknown> = {
+  sections: [
+    {
+      id: 'skin-biotype',
+      title: 'Biotipo Cutáneo',
+      fields: [
+        {
+          key: 'skinType',
+          label: 'Tipo de piel',
+          type: 'select',
+          options: ['normal', 'seca', 'grasa', 'mixta', 'sensible'],
+          required: true,
+          sortOrder: 1,
+        },
+        {
+          key: 'phototype',
+          label: 'Fototipo',
+          type: 'select',
+          options: ['I', 'II', 'III', 'IV', 'V', 'VI'],
+          required: true,
+          sortOrder: 2,
+        },
+      ],
+    },
+    {
+      id: 'skin-characteristics',
+      title: 'Características de la Piel',
+      fields: [
+        { key: 'flacidity', label: '¿Flacidez?', type: 'boolean', sortOrder: 1 },
+        { key: 'expressionLines', label: '¿Líneas de expresión?', type: 'boolean', sortOrder: 2 },
+        { key: 'nevi', label: '¿Nevos?', type: 'boolean', sortOrder: 3 },
+        { key: 'neviLocation', label: '¿Dónde?', type: 'text', sortOrder: 4 },
+        { key: 'macules', label: '¿Máculas?', type: 'boolean', sortOrder: 5 },
+        { key: 'maculeCount', label: '¿Cuántas?', type: 'number', sortOrder: 6 },
+        { key: 'maculeLocation', label: '¿Dónde?', type: 'text', sortOrder: 7 },
+        { key: 'telangiectasias', label: '¿Telangiectasias?', type: 'boolean', sortOrder: 8 },
+        { key: 'telangiectasiasLocation', label: '¿Dónde?', type: 'text', sortOrder: 9 },
+        { key: 'rosacea', label: '¿Rosácea?', type: 'boolean', sortOrder: 10 },
+        { key: 'acne', label: '¿Acné?', type: 'boolean', sortOrder: 11 },
+        { key: 'acneGrade', label: '¿Qué grado?', type: 'text', sortOrder: 12 },
+        { key: 'darkCircles', label: '¿Ojeras?', type: 'boolean', sortOrder: 13 },
+        { key: 'darkCirclesType', label: '¿Qué tipo?', type: 'text', sortOrder: 14 },
+        { key: 'edema', label: '¿Edema?', type: 'boolean', sortOrder: 15 },
+        { key: 'edemaLocation', label: '¿Dónde?', type: 'text', sortOrder: 16 },
+      ],
+    },
+    {
+      id: 'previous-treatments',
+      title: 'Antecedentes',
+      fields: [
+        { key: 'hasHadTreatment', label: '¿Se ha realizado algún tratamiento facial?', type: 'boolean', sortOrder: 1 },
+        { key: 'treatmentType', label: '¿Qué tipo de tratamiento?', type: 'text', sortOrder: 2 },
+        { key: 'hasRoutine', label: '¿Tiene una rutina facial?', type: 'boolean', sortOrder: 3 },
+        { key: 'routineProducts', label: '¿Qué utiliza?', type: 'text', sortOrder: 4 },
+      ],
+    },
+    {
+      id: 'sun-exposure',
+      title: 'Exposición Solar',
+      fields: [
+        { key: 'sunExposure', label: '¿Toma sol o cama solar?', type: 'boolean', sortOrder: 1 },
+        { key: 'burnsEasily', label: '¿Se quema fácilmente?', type: 'boolean', sortOrder: 2 },
+      ],
+    },
+    {
+      id: 'consultation-reason',
+      title: 'Motivo de Consulta',
+      fields: [
+        { key: 'motive', label: 'Motivo de consulta', type: 'textarea', required: true, sortOrder: 1 },
+      ],
+    },
+    {
+      id: 'clinical-assessment',
+      title: 'Evaluación Clínica',
+      fields: [
+        { key: 'clinicalJudgment', label: 'Juicio de valor', type: 'textarea', sortOrder: 1 },
+      ],
+    },
+    {
+      id: 'goals',
+      title: 'Objetivos a lograr',
+      fields: [
+        {
+          key: 'goals',
+          label: 'Objetivos',
+          type: 'multiselect',
+          options: [
+            'unificarTono',
+            'aportarLuminosidad',
+            'repararBarreraCutanea',
+            'controlarSebo',
+            'extraerComedones',
+            'disminuirEngrosamiento',
+            'disminuirPoros',
+            'mejorarHidratacion',
+            'mejorarHumectacion',
+            'reducirLineasExpresion',
+            'reducirArrugas',
+            'tratarHiperpigmentaciones',
+          ],
+          sortOrder: 1,
+        },
+      ],
+    },
+    {
+      id: 'referrals',
+      title: 'Derivaciones',
+      fields: [
+        { key: 'referrals', label: 'Derivaciones', type: 'textarea', sortOrder: 1 },
+      ],
+    },
+    {
+      id: 'additional-notes',
+      title: 'Otras Observaciones',
+      fields: [
+        { key: 'additionalNotes', label: 'Otras observaciones', type: 'textarea', sortOrder: 1 },
+      ],
+    },
+  ],
+  widgets: {
+    facialDiagram: true,
+    photoCapture: true,
+  },
+};
+
+/**
+ * Ensure the default "Exploración Física Facial" system template exists.
+ * This is called lazily from GET template endpoints — no manual seed step required.
+ * Idempotent: skips if slug "facial-exploration" already exists.
+ */
+export async function ensureDefaultExplorationTemplate(): Promise<void> {
+  const [existing] = await db
+    .select({ id: explorationTemplates.id })
+    .from(explorationTemplates)
+    .where(eq(explorationTemplates.slug, 'facial-exploration'))
+    .limit(1);
+
+  if (existing) return; // Already seeded
+
+  await db.insert(explorationTemplates).values({
+    id: randomUUID(),
+    slug: 'facial-exploration',
+    name: 'Exploración Física Facial',
+    description: 'Plantilla de exploración física facial con evaluación cutánea completa',
+    config: JSON.stringify(facialExplorationConfig),
+    isSystem: true,
+    isActive: true,
+  });
 }
 
 // ─── Seed ─────────────────────────────────────────────────────────────────────
@@ -512,13 +675,21 @@ async function seed() {
   console.log(`  ✅ ${explorationSeedData.length} sample explorations created`);
   console.log(`  ✅ ${photoCount} exploration photos created`);
 
+  // ── Exploration Templates ────────────────────────────────────────────────
+  await ensureDefaultExplorationTemplate();
+  console.log('  ✅ Default exploration template seeded');
+
   console.log('🌱 Seed complete!');
   console.log(`\n📧 Login credentials:`);
   console.log(`   Professional: dra.uncal@selflove.com / ${PASSWORD}`);
   console.log(`   Patient:      maria.garcia@email.com / ${PASSWORD}`);
 }
 
-seed().catch((err) => {
-  console.error('❌ Seed failed:', err);
-  process.exit(1);
-});
+// Only run seed when executed directly as a script
+const isDirectRun = process.argv.length > 1 && process.argv[1]?.includes('seed');
+if (isDirectRun) {
+  seed().catch((err) => {
+    console.error('❌ Seed failed:', err);
+    process.exit(1);
+  });
+}

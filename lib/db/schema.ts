@@ -1,6 +1,56 @@
 import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
+// ─── Exploration Templates ─────────────────────────────────────────────────────
+// Reusable config-driven templates for physical exploration data collection.
+// System templates (is_system=true) are seeded and delete-protected.
+// Config is stored as a JSON string matching TemplateConfig schema.
+
+export const explorationTemplates = sqliteTable('exploration_templates', {
+  id: text('id').primaryKey(),
+  professionalId: text('professional_id').references(() => users.id), // null for system templates
+  slug: text('slug').unique().notNull(),
+  name: text('name').notNull(),
+  description: text('description'),
+  config: text('config').notNull(), // JSON string — TemplateConfig
+  isSystem: integer('is_system', { mode: 'boolean' }).notNull().default(false),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  updatedAt: text('updated_at')
+    .notNull()
+    .default(sql`(datetime('now'))`),
+});
+
+export type ExplorationTemplate = typeof explorationTemplates.$inferSelect;
+export type NewExplorationTemplate = typeof explorationTemplates.$inferInsert;
+
+// ─── Clinical Notes ─────────────────────────────────────────────────────────────
+// Free-text clinical observations attached to patient records.
+// Independent of exploration templates — serves as a clinical-history log.
+
+export const clinicalNotes = sqliteTable('clinical_notes', {
+  id: text('id').primaryKey(),
+  patientId: text('patient_id')
+    .references(() => users.id)
+    .notNull(),
+  professionalId: text('professional_id')
+    .references(() => users.id)
+    .notNull(),
+  date: text('date').notNull(), // ISO 8601 date (YYYY-MM-DD)
+  content: text('content').notNull(),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  updatedAt: text('updated_at')
+    .notNull()
+    .default(sql`(datetime('now'))`),
+});
+
+export type ClinicalNote = typeof clinicalNotes.$inferSelect;
+export type NewClinicalNote = typeof clinicalNotes.$inferInsert;
+
 // ─── Users ────────────────────────────────────────────────────────────────────
 
 export const users = sqliteTable('users', {
@@ -118,8 +168,10 @@ export const explorations = sqliteTable('explorations', {
   professionalId: text('professional_id')
     .references(() => users.id)
     .notNull(),
-  skinEvaluation: text('skin_evaluation'), // JSON string
-  facialAnalysis: text('facial_analysis'), // JSON string
+  skinEvaluation: text('skin_evaluation'), // JSON string (legacy)
+  facialAnalysis: text('facial_analysis'), // JSON string (legacy)
+  templateId: text('template_id').references(() => explorationTemplates.id), // FK to v2 template
+  responses: text('responses'), // JSON string — template-driven responses (v2)
   notes: text('notes'),
   date: text('date').notNull(), // ISO 8601 date (YYYY-MM-DD)
   createdAt: text('created_at')

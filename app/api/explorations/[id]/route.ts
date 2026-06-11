@@ -6,19 +6,9 @@ import { getSession } from '@/lib/auth';
 import { requireRole } from '@/lib/api/auth-guard';
 import { validate } from '@/lib/api/validators/common';
 import { updateExplorationSchema } from '@/lib/api/validators/explorations';
+import { parseJsonField } from '@/lib/api/helpers';
 import { serverError, notFound } from '@/lib/api/errors';
 import { randomUUID } from 'crypto';
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
-function parseJsonField(value: string | null): unknown {
-  if (!value) return undefined;
-  try {
-    return JSON.parse(value);
-  } catch {
-    return undefined;
-  }
-}
 
 // ─── GET /api/explorations/[id] ────────────────────────────────────────────────
 // Professional only: return single exploration with its photos.
@@ -60,6 +50,7 @@ export async function GET(
         ...row,
         skinEvaluation: parseJsonField(row.skinEvaluation),
         facialAnalysis: parseJsonField(row.facialAnalysis),
+        responses: parseJsonField(row.responses),
         photos,
       },
     });
@@ -122,6 +113,14 @@ export async function PATCH(
         ? JSON.stringify(data.facialAnalysis)
         : null;
     }
+    if (data.templateId !== undefined) {
+      updateData.templateId = data.templateId;
+    }
+    if (data.responses !== undefined) {
+      updateData.responses = data.responses
+        ? JSON.stringify(data.responses)
+        : null;
+    }
     if (data.notes !== undefined) {
       updateData.notes = data.notes;
     }
@@ -170,6 +169,7 @@ export async function PATCH(
         ...updated,
         skinEvaluation: parseJsonField(updated.skinEvaluation),
         facialAnalysis: parseJsonField(updated.facialAnalysis),
+        responses: parseJsonField(updated.responses),
         photos,
       },
     });

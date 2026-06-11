@@ -6,23 +6,9 @@ import { getSession } from '@/lib/auth';
 import { requireRole } from '@/lib/api/auth-guard';
 import { validate } from '@/lib/api/validators/common';
 import { createExplorationSchema } from '@/lib/api/validators/explorations';
+import { parseJsonField } from '@/lib/api/helpers';
 import { serverError, badRequest } from '@/lib/api/errors';
 import { randomUUID } from 'crypto';
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
-/**
- * Safely parse a JSON string column from SQLite.
- * Returns `undefined` for null / invalid / empty values.
- */
-function parseJsonField(value: string | null): unknown {
-  if (!value) return undefined;
-  try {
-    return JSON.parse(value);
-  } catch {
-    return undefined;
-  }
-}
 
 // ─── GET /api/explorations?patientId=X ────────────────────────────────────────
 // Professional only: list explorations for a patient, ordered by date DESC.
@@ -73,11 +59,12 @@ export async function GET(request: Request) {
       photosByExplorationId.set(photo.explorationId, list);
     }
 
-    // ── Build response (parse JSON columns, attach photos) ──────────────────
+    // ── Build response (v2 fallback: responses ?? legacy) ───────────────────
     const result = rows.map((row) => ({
       ...row,
       skinEvaluation: parseJsonField(row.skinEvaluation),
       facialAnalysis: parseJsonField(row.facialAnalysis),
+      responses: parseJsonField(row.responses),
       photos: photosByExplorationId.get(row.id) ?? [],
     }));
 
@@ -108,16 +95,27 @@ export async function POST(request: Request) {
     const data = parsed.data;
     const id = randomUUID();
 
-    // ── Insert exploration ──────────────────────────────────────────────────
+    // ── Determine write path: v2 (template_id) vs legacy ────────────────────
+    const isV2 = !!data.templateId;
+
     await db.insert(explorations).values({
       id,
       patientId: data.patientId,
       professionalId: user.id,
-      skinEvaluation: data.skinEvaluation
-        ? JSON.stringify(data.skinEvaluation)
-        : null,
-      facialAnalysis: data.facialAnalysis
-        ? JSON.stringify(data.facialAnalysis)
+      // v2 path: store in responses, null out legacy columns
+      skinEvaluation: isV2
+        ? null
+        : data.skinEvaluation
+          ? JSON.stringify(data.skinEvaluation)
+          : null,
+      facialAnalysis: isV2
+        ? null
+        : data.facialAnalysis
+          ? JSON.stringify(data.facialAnalysis)
+          : null,
+      templateId: data.templateId ?? null,
+      responses: isV2 && data.responses
+        ? JSON.stringify(data.responses)
         : null,
       notes: data.notes ?? null,
       date: data.date,
@@ -160,6 +158,7 @@ export async function POST(request: Request) {
           ...created,
           skinEvaluation: parseJsonField(created.skinEvaluation),
           facialAnalysis: parseJsonField(created.facialAnalysis),
+          responses: parseJsonField(created.responses),
           photos,
         },
       },

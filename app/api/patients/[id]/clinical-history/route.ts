@@ -10,28 +10,8 @@ import {
 import { eq, and, desc, inArray, sql } from 'drizzle-orm';
 import { getSession } from '@/lib/auth';
 import { requireRole } from '@/lib/api/auth-guard';
+import { parseJsonField, parseJsonArray } from '@/lib/api/helpers';
 import { serverError, notFound } from '@/lib/api/errors';
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
-function parseJsonArray(value: string | null): string[] {
-  if (!value) return [];
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function parseJsonField(value: string | null): unknown {
-  if (!value) return undefined;
-  try {
-    return JSON.parse(value);
-  } catch {
-    return undefined;
-  }
-}
 
 // ─── GET /api/patients/[id]/clinical-history ───────────────────────────────────
 // Professional only: aggregate patient clinical data from multiple sources.
@@ -164,6 +144,7 @@ export async function GET(
       date: row.date,
       skinEvaluation: parseJsonField(row.skinEvaluation),
       facialAnalysis: parseJsonField(row.facialAnalysis),
+      responses: parseJsonField(row.responses),
       notes: row.notes,
       photos: photosByExplorationId.get(row.id) ?? [],
     }));

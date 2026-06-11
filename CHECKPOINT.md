@@ -73,10 +73,52 @@
 
 | ID | Descripción | Tipo | Estado |
 |----|------------|------|--------|
-| P3 | **Exploración Física** — gestión de exploraciones físicas (plantillas, resultados por sesión) | Feature | Pendiente |
-| M-01 | **Mobile Compatibility** — adaptación responsive del Portal Paciente | Mejora | Pendiente |
+| P3.1 | **Exploration Templates & Clinical History Integration** — Historial Clínico como hub central, exploraciones como registros clínicos, sistema de plantillas configurables | Feature | Pendiente |
+| M-01A | **Mobile Compatibility Foundation (Lite)** — z-index layers, responsive dates, CTAs full-width, FAB clearance | Mejora | ✅ Ready for Archive |
 | UX-01..08 | Mejoras UX (detalle en sección 3) | UX | Backlog |
 | ~~BUG-PORTAL-01~~ | ~~Inicio del paciente no refleja turnos correctamente~~ | ~~Bug~~ | ~~FIXED ✅~~ |
+
+---
+
+### P3.1 — Detalle de Requerimientos (Registrado 2026-06-10)
+
+**Cambio de dirección**: La Exploración Física NO evoluciona como módulo independiente. Pasa a ser un tipo de registro clínico dentro del Historial Clínico.
+
+**Visión**: 
+```
+Paciente
+└── Historial Clínico
+    ├── Resumen
+    ├── Exploraciones
+    ├── Fotografías
+    ├── Análisis Facial
+    ├── Tratamientos realizados
+    ├── Evolución clínica
+    └── Observaciones
+```
+
+**Requerimientos funcionales**:
+- Plantillas de exploración reutilizables (Facial, Corporal, Capilar, Seguimiento, Post-tratamiento, Personalizada)
+- Formularios dinámicos con campos configurables (texto corto/largo, sí/no, número, fecha, selección única/múltiple)
+- Plantilla inicial: "Exploración Física Facial" con datos de piel, evaluación clínica, antecedentes, evaluación profesional
+- Exploraciones guardadas aparecen en el Historial Clínico por fecha
+- Arquitectura preparada para futuras comparativas de evolución clínica
+- Admin de plantillas como capacidad futura en Configuración
+
+**Compatibilidad obligatoria**:
+- Mantener exploraciones existentes
+- Mantener fotografías existentes
+- Mantener análisis facial existente
+- Mantener datos actuales
+
+**Fuera de alcance inicial**:
+- Comparativas automáticas de evolución
+- Gráficos clínicos
+- Firma digital / Exportación PDF
+- Compartir exploraciones con pacientes
+- Constructor visual avanzado de formularios
+
+**Flujo SDD planificado**: Discovery → Proposal → Specs → Design → Tasks → Estimación → QA Plan
 
 ---
 
@@ -130,9 +172,9 @@ selflove/
 | Indicador | Valor |
 |-----------|-------|
 | Último commit | `adbfda0` — Gestión de Tratamientos Implementado |
-| Working tree | CLEAN — sin cambios sin commit |
+| Working tree | MODIFIED — cambios M-01A sin commit (+20 -11 líneas en 7 archivos) |
 | tsc | ✅ Pasa sin errores |
-| Build | ✅ Pasa |
+| Build | ✅ Pasa (Next.js 16.2.6, Turbopack) |
 | Migraciones | 1 aplicada (0000) |
 | Openspec | config.yaml + 6 specs en `specs/` + 2 archived changes |
 
@@ -142,19 +184,20 @@ selflove/
 
 ## 7. Próxima Recomendación
 
-**Abrir P3 — Exploración Física**
+**Abrir P3.1 — Exploration Templates & Clinical History Integration**
 
-*Justificación*: Es la funcionalidad core faltante más cercana al flujo actual (turno → exploración). Continúa la línea natural del producto: gestión de turnos → registro de resultados clínicos.
+*Justificación*: La Exploración Física existente (implementada sin SDD) necesita evolucionar hacia un sistema de plantillas reutilizables integrado en el Historial Clínico como hub central. Es la funcionalidad core de la profesional.
 
-*Requerimientos tentativos*:
-- Plantillas de exploración física por profesional
-- Registro de resultados por sesión/turno
-- Historial de exploraciones por paciente
-- (Por definir en SDD Proposal)
+*Flujo planificado*:
+1. Discovery (exploración del código existente)
+2. Proposal
+3. Specs
+4. Design
+5. Tasks + Estimación
+6. QA Plan
+7. Apply + Verify + Archive
 
-**Alternativas**:
-- M-01 Mobile Compatibility si el uso desde dispositivos móviles es prioritario
-- UX-07 + UX-03 si el foco es pulir para producción
+*Prerrequisito*: Archivar M-01A (pendiente de commit y archive formal)
 
 ---
 

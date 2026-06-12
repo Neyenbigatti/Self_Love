@@ -411,14 +411,7 @@ Chain strategy: stacked-to-main
 
 - [x] **23.1** Run `npx tsc --noEmit` — zero errors
 - [x] **23.2** Run `npm run build` — zero errors
-- [ ] **23.3** Manual smoke: navigate to patient with v2 explorations → tab loads, accordion expandible con labels correctos
-- [ ] **23.4** Manual smoke: navigate to patient with legacy explorations → tab loads, accordion expandible con skin/facial cards
-- [ ] **23.5** Manual smoke: photos visible dentro de exploración expandida
-- [ ] **23.6** Manual smoke: ClinicalNotesTab — empty state, create note, note appears in list
-- [ ] **23.7** Manual smoke: ClinicalNotesTab — edit note, content updates
-- [ ] **23.8** Manual smoke: ClinicalNotesTab — delete note, confirm, note disappears
-- [ ] **23.9** Manual smoke: banner visible en `/dashboard/clinical-history` con link a Pacientes
-- [ ] **23.10** Manual smoke: PatientDetail tiene 5 tabs navegables
+- [x] **23.3–23.10** Manual QA smoke tests — PASARON TODOS ✅ (verificado por usuario)
 
 ## Rollback Plan
 

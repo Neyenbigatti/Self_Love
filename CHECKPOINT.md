@@ -1,11 +1,12 @@
 # SelfLove — Checkpoint Final
 
-**Fecha**: 2026-06-11
-**Último commit**: `bbb0f58` — P3.1 PR #1 Foundation: exploration_templates, clinical_notes, explorations v2
-**Working tree**: CLEAN ✅ (cambios implementados, no mergeados)
+**Fecha**: 2026-06-12
+**Último commit**: `751bfda` — Centro Clínico de Pacientes con Exploracion y Notas.
+**Working tree**: ✅ CON CAMBIOS (fix botones destructivos, archive openspec)
 **tsc**: OK ✅
 **Build**: OK ✅
 **Migrations**: 2 (0000 + 0001_exploration_templates) ✅
+**P3.1A — Patient Clinical Hub**: ✅ COMPLETO — mergeado a main
 
 ---
 
@@ -36,26 +37,15 @@
 | Bottom padding pb-20 para clearance del FAB | Portal Paciente | `m-01a-mobile-foundation` | ✅ READY FOR ARCHIVE |
 | Fechas responsive en appointment cards | Portal Paciente | `m-01a-mobile-foundation` | ✅ READY FOR ARCHIVE |
 | CTAs full-width en mobile (Step 2 + Step 3 booking) | Portal Paciente | `m-01a-mobile-foundation` | ✅ READY FOR ARCHIVE |
-| Exploration Templates system (table + config JSON) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #1 COMPLETE |
-| Clinical Notes (schema + CRUD API) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #1 COMPLETE |
-| Explorations schema v2 (template_id + responses + legacy compat) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #1 COMPLETE |
-| Lazy auto-seed: plantilla "Exploración Física Facial" | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #1 COMPLETE |
-| DynamicForm + FieldRenderer (7 field types: text, textarea, boolean, number, date, select, multiselect) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #2 COMPLETE |
-| DynamicForm desde template.config con secciones como Cards + sortOrder | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #2 COMPLETE |
-| Widgets condicionales: FacialDiagram + PhotoCapture toggle por config | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #2 COMPLETE |
-| Fallback legacy: exploraciones sin templateId usan tabs originales | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #2 COMPLETE |
-| Merge save: responses mergeados con datos existentes preservan campos huérfanos | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #2 COMPLETE |
-| Template por defecto para exploraciones nuevas (slug "facial-exploration") | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #2 COMPLETE |
-| Settings route /dashboard/settings con editor visual de plantilla | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #3 COMPLETE |
-| TemplateEditor: edición visual de config JSON (secciones + campos + widgets) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #3 COMPLETE |
-| FieldFormDialog: modal add/edit campo con auto key gen, type warning, system protections | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #3 COMPLETE |
-| CRUD de secciones (add, edit, delete, reorder con ChevronUp/Down) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #3 COMPLETE |
-| CRUD de campos (add, edit, delete, reorder dentro de sección) | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #3 COMPLETE |
-| Widgets toggle (facialDiagram, photoCapture) desde editor | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #3 COMPLETE |
-| isActive field property: oculta campos en DynamicForm sin perder datos históricos | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #3 COMPLETE |
-| system field property: badge "Sistema" metadata-only, no bloquea edición/delete | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #3 COMPLETE |
-| isActive !== false filter en DynamicForm + seed con isActive:true, system:true | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #3 COMPLETE |
-| Bug fixes: response shape, double-stringify, Zod schema, ZoneDetailForm fallback | P3.1 — Templates | `p3-1-exploration-templates` | ✅ PR #3 RESUELTOS |
+| Exploration Templates system (table + config JSON) | P3.1A — Templates | `p3-1-exploration-templates` | ✅ COMPLETE |
+| Clinical Notes (schema + CRUD API) | P3.1A — Templates | `p3-1-exploration-templates` | ✅ COMPLETE |
+| Explorations schema v2 + DynamicForm + FieldRenderer | P3.1A — Templates | `p3-1-exploration-templates` | ✅ COMPLETE |
+| Template Field Editor (Configuración) | P3.1A — Templates | `p3-1-exploration-templates` | ✅ COMPLETE |
+| **Patient Clinical Hub** — consolidación en Pacientes | P3.1A — Hub | `p3-1-exploration-templates` | ✅ COMPLETE |
+| ExplorationsTab (read-only, dual format v2/legacy, fotos) | P3.1A — Hub | `p3-1-exploration-templates` | ✅ COMPLETE |
+| ClinicalNotesTab (CRUD: crear, editar, eliminar) | P3.1A — Hub | `p3-1-exploration-templates` | ✅ COMPLETE |
+| Transición de Historial Clínico (banner informativo) | P3.1A — Hub | `p3-1-exploration-templates` | ✅ COMPLETE |
+| templateConfig en clinical-history API (batch lookup) | P3.1A — Hub | `p3-1-exploration-templates` | ✅ COMPLETE |
 
 ---
 
@@ -69,15 +59,7 @@
 | ~~BUG-P3-03~~ | ~~Double-stringify de config → Zod 400~~ | ~~Media~~ | ~~QA #16~~ |
 | ~~BUG-P3-04~~ | ~~isActive y system se pierden al guardar (Zod strip)~~ | ~~Media~~ | ~~QA #16~~ |
 
-   **→ FIXED ✅ — VERIFIED ✅** Causa raíz: comparación `apt.date >= now` vs `apt.date >= today(00:00)`. Fix en `app/patient/page.tsx` y `app/patient/history/page.tsx`.
-
-   **→ BUG-P3-01 FIXED ✅** Causa raíz: `facialAnalysis[selectedZone] ?? null` sin fallback `defaultAreaAnalysis`. Fix en `dynamic-form.tsx`.
-
-   **→ BUG-P3-02 FIXED ✅** Causa raíz: SLUG route devuelve `{ template }`, LIST route devuelve `{ templates }` flat. Fix: `data.template ?? data`.
-
-   **→ BUG-P3-03 FIXED ✅** Causa raíz: frontend hace `JSON.stringify(config)` + backend serializa internamente → doble stringify. Fix: enviar `config` como objeto.
-
-   **→ BUG-P3-04 FIXED ✅** Causa raíz: `templateConfigFieldSchema` sin `isActive`/`system` → `safeParse` los strippeaba. Fix: agregar ambos como `z.boolean().optional()`.
+   **→ FIXED ✅ — VERIFIED ✅**
 
 ---
 
@@ -88,16 +70,11 @@
 | UX-01 | #1 | Nombre del tratamiento no aparece en cards de Inicio del Portal Paciente | Baja |
 | UX-02 | #1 | Precio del tratamiento no visible durante booking (card de selección) | Baja |
 | UX-03 | #8 | Unicidad de nombre case-sensitive (Botox ≠ botox) — definir regla pre-producción | Media |
-| UX-04 | #5b | Botón de confirmación delete dialog usa estilo incorrecto tras error 409 | Baja |
+| ~~UX-04~~ | ~~#5b~~ | ~~Botón de confirmación delete dialog usa estilo incorrecto~~ | ~~Baja~~ |
 | UX-05 | #5b | Error 409 cierra el diálogo de borrado antes de mostrar mensaje | Baja |
 | UX-06 | #6 | Drag & Drop como mejora futura sobre ChevronUp/Down | Baja |
 | UX-07 | #10 | Mensaje de error técnico "patientId must match your session" poco amigable | Media |
 | UX-08 | — | Dashboard Profesional Modular — altura fija por widget, scroll interno, ocultar/reordenar módulos | Media-Alta |
-
-   **UX-08 — Detalle:** Problemas: Pendientes de confirmación y agenda semanal crecen sin límite → el dashboard aumenta el scroll vertical de toda la página. No existe personalización ni el diseño escala con más pacientes/turnos.  
-   **Objetivos:** Altura máxima con scroll interno por widget, reducir scroll global, permitir ocultar/mostrar y reordenar módulos.  
-   **Estructura propuesta:** Resumen · Próximos Turnos · Pendientes (scroll) · Agenda Semanal (scroll) · Estadísticas · Widgets configurables.  
-   **No implementar ahora — registrar solo como backlog UX.**
 
 ---
 
@@ -105,88 +82,75 @@
 
 | ID | Descripción | Tipo | Estado |
 |----|------------|------|--------|
-| P3.1 | **Exploration Templates & Clinical History Integration** — sistema de plantillas configurables para exploración física, Dynamic Form Renderer, admin de campos desde Configuración, Clinical Notes, Historial Clínico como hub | Feature | En Progreso — PR #1 ✅ / PR #2 ✅ / PR #3 ✅ / PR #4 ⏳ |
-| M-01A | **Mobile Compatibility Foundation (Lite)** — z-index layers, responsive dates, CTAs full-width, FAB clearance | Mejora | ✅ Ready for Archive |
+| P3.1A | **Exploration Templates & Patient Clinical Hub** — sistema de plantillas, DynamicForm, Template Editor, y consolidación de datos clínicos en Pacientes | Feature | ✅ **COMPLETO** |
+| M-01A | **Mobile Compatibility Foundation (Lite)** — z-index layers, responsive dates, CTAs full-width, FAB clearance | Mejora | ✅ **COMPLETO** |
 | UX-01..08 | Mejoras UX (detalle en sección 3) | UX | Backlog |
-| ~~BUG-PORTAL-01~~ | ~~Inicio del paciente no refleja turnos correctamente~~ | ~~Bug~~ | ~~FIXED ✅~~ |
+| FUT-01 | **Multi-selección de tratamientos por paciente** — elegir 2-3 tratamientos consecutivos en un mismo turno | Feature | Idea |
+| FUT-02 | **Dashboard modular** — paneles movibles/ocultables a gusto del profesional | UX | Idea |
+| FUT-03 | **Dark Mode** — tema oscuro completo | UX | Idea |
+| FUT-04 | **Notificaciones** — sistema de notificaciones para profesionales y pacientes | Feature | Idea |
+| FUT-05 | **Restricción de registro** — solo pacientes pueden registrarse (única cosmetóloga) | Seguridad | Idea |
 
 ---
 
-### P3.1 — Estado Actual (Actualizado 2026-06-11)
+## 5. Decisión Arquitectónica — ARCH-01
 
-**Dirección arquitectónica**: Historial Clínico como hub central. Exploración Física como tipo de registro clínico. Sistema de plantillas configurables editables por la profesional.
+**Resolución**: Opción A aprobada — Consolidar en Pacientes.
 
-**Visión objetivo**:
 ```
-Paciente
-└── Historial Clínico
-    ├── Exploraciones (template-driven)
-    ├── Fotografías
-    ├── Análisis Facial
-    ├── Tratamientos realizados
-    ├── Notas Clínicas
-    └── Evolución clínica
+Paciente (Hub Clínico principal)
+├── Resumen
+├── Historial Médico
+├── Tratamientos
+├── Exploraciones (read-only)
+└── Notas Clínicas (CRUD)
 ```
 
-**División en PRs**:
+**Reglas firmes**:
+- Fotografías pertenecen a exploraciones — NO existe tab independiente
+- ExploracionesTab es SOLO CONSULTA — edición/creación en `/dashboard/exploration`
+- Historial Clínico en transición: Fase 1 (banner) ✅ → Fase 2 (redirect) → Fase 3 (cleanup)
+
+---
+
+## 6. P3.1A — División en PRs
 
 | PR | Nombre | Estado |
 |----|--------|--------|
 | **PR #1** | Foundation: schema + seed + APIs (exploration_templates, clinical_notes, explorations v2) | ✅ **COMPLETE** — mergeado a main |
-| **PR #2** | Dynamic Form Renderer + Exploration API v2 | ✅ **COMPLETE** — sin mergear |
-| **PR #3** | Admin UI: Template Field Editor (Configuración) | ✅ **COMPLETE** — sin mergear |
-| **PR #4** | Clinical Notes UI + API Evolution | ⏳ **PENDIENTE** — esperar instrucciones |
+| **PR #2** | Dynamic Form Renderer + Exploration API v2 | ✅ **COMPLETE** — mergeado a main |
+| **PR #3** | Admin UI: Template Field Editor (Configuración) | ✅ **COMPLETE** — mergeado a main |
+| **PR #4** | Patient Clinical Hub — consolidación en Pacientes | ✅ **COMPLETE** — mergeado a main |
 
-**PR #1 — Foundation** (7 commits, 15 archivos):
-- `exploration_templates` table con config JSON (sections + fields + widgets)
-- `clinical_notes` table (id, patientId, professionalId, date, content)
-- Explorations v2: columnas `template_id` (FK) + `responses` (JSON)
-- Compatibilidad legacy: `skin_evaluation`/`facial_analysis` se mantienen
-- Lazy auto-seed: `ensureDefaultExplorationTemplate()` inserta plantilla facial al primer GET
-- APIs: templates CRUD, clinical notes CRUD, explorations v2
-- Seed: plantilla "Exploración Física Facial" con 9 secciones y 28+ campos
-- `is_system=true`: protege contra DELETE y cambios de slug, NO bloquea edición de config
-
-**Principios de diseño**:
-- `responses` son snapshot por exploración — modificar template no afecta datos históricos
-- System templates: config-editables, delete-protected
-- Seed lazy en GET, no en migración ni paso manual
-- Tipos de campo: text, textarea, boolean, number, date, select, multiselect
-
-**PR #2 — Dynamic Form Renderer** (implementado, sin mergear):
-- `FieldRenderer` — 7 tipos de campo (text, textarea, boolean, number, date, select, multiselect)
-- `DynamicForm` — renderiza secciones como Cards con sortOrder, widgets condicionales (FacialDiagram, PhotoCapture)
-- Exploration page detecta v2 vs legacy: DynamicForm para exploraciones nuevas/con template, tabs legacy para históricas
-- Merge save: `{ ...existingResponses, ...currentResponses }` preserva campos huérfanos
-- Template por defecto desde slug "facial-exploration" con fallback a `templates[0]`
-- Legacy compatible: datos seed históricos siguen funcionando sin cambios
-
-**PR #3 — Template Editor** (implementado, sin mergear):
-- Settings route en `/dashboard/settings`
-- `TemplateEditor`: editor visual completo de config JSON con secciones, campos, widgets
-- `FieldFormDialog`: modal para add/edit campo con auto-generación de key, type warning, metadata system
-- CRUD de secciones (add, edit, delete, reorder con ChevronUp/Down)
-- CRUD de campos dentro de cada sección (add, edit, delete, reorder)
-- Widgets toggle: facialDiagram, photoCapture desde el editor
-- `isActive` field property: oculta campos en DynamicForm sin perder datos históricos
-- `system` field property: badge "Sistema" metadata-only, no bloquea edición/delete
-- PUT handler acepta config completo como objeto (no string)
-- Persistencia validada: seed con isActive:true, system:true en 28+ campos
-
-**Bugs encontrados y resueltos durante PR #3:**
-
-| Bug | Síntoma | Causa Raíz | Fix |
-|-----|---------|-----------|-----|
-| **BUG-P3-01** | ZoneDetailForm no renderiza al seleccionar zona | `facialAnalysis[selectedZone] ?? null` sin fallback `defaultAreaAnalysis` | Restaurado `?? defaultAreaAnalysis` |
-| **BUG-P3-02** | Response shape mismatch | SLUG route devuelve `{ template }`, LIST route devuelve `{ templates }` flat | `data.template ?? data` |
-| **BUG-P3-03** | Zod 400 al guardar config | Frontend hace `JSON.stringify(config)` + backend serializa → double stringify | Enviar config como objeto |
-| **BUG-P3-04** | isActive/system se pierden al guardar | Zod schema sin `isActive`/`system` → safeParse los strippeaba | Agregar `z.boolean().optional()` en schema |
-
-Todos los smokes PASS (16.3–16.9). Todos los bugs resueltos y verificados.
+   **→ UX-04 FIXED ✅** — `--destructive-foreground` corregido (era idéntico a `--destructive`)
 
 ---
 
-## 5. Arquitectura Actual
+### PR #4 — Patient Clinical Hub (NUEVO)
+
+**Scope**:
+- `ExplorationsTab`: lista accordion read-only con dual format (v2 con templateConfig, legacy con skin/facial)
+- `ClinicalNotesTab`: CRUD completo (inline create, dialog edit, alert delete)
+- `PatientDetail`: 5 tabs (Resumen, Historial Médico, Tratamientos, Exploraciones, Notas Clínicas)
+- Banner de transición en `/dashboard/clinical-history`
+- `templateConfig` en clinical-history API con batch lookup
+
+**Archivos**:
+| Archivo | Acción |
+|---------|--------|
+| `components/patients/explorations-tab.tsx` | Creado |
+| `components/patients/clinical-notes-tab.tsx` | Creado |
+| `components/patients/patient-detail.tsx` | Modificado (+2 tabs) |
+| `app/dashboard/clinical-history/page.tsx` | Modificado (+banner) |
+| `app/api/patients/[id]/clinical-history/route.ts` | Modificado (+templateConfig) |
+| `lib/api/helpers.ts` | Modificado (+getTemplateConfigById, getTemplateConfigMap) |
+| `lib/types.ts` | Modificado (+TemplateConfig types exportados) |
+
+**Verificación**: `npx tsc --noEmit` ✅ | `npm run build` ✅
+
+---
+
+## 7. Arquitectura Actual
 
 ```
 selflove/
@@ -195,88 +159,80 @@ selflove/
 │   │   ├── auth/ -> login, logout, register, me
 │   │   ├── appointments/ -> CRUD appointments
 │   │   ├── availability/ -> CRUD availability + slots generation
-│   │   ├── exploration-templates/ -> (NUEVO) GET list, GET by slug, PUT update
+│   │   ├── exploration-templates/ -> GET list, GET by slug, PUT update
 │   │   ├── explorations/ -> CRUD explorations (v2: template_id + responses)
-│   │   ├── patients/ -> Patient CRUD + clinical-history + medical-history + clinical-notes (NUEVO)
+│   │   ├── patients/ -> Patient CRUD + clinical-history + medical-history + clinical-notes
 │   │   └── treatment-types/ -> CRUD treatment types (P2)
 │   ├── dashboard/        -> Professional dashboard
 │   │   ├── availability/ -> Availability management (P1)
 │   │   ├── calendar/     -> Appointment calendar
-│   │   ├── clinical-history/ -> Historial Clínico
+│   │   ├── clinical-history/ -> Historial Clínico (Fase 1: banner)
 │   │   ├── exploration/  -> Exploración Física
-│   │   ├── patients/     -> Patient management
-│   │   ├── settings/     -> Template Editor (P3) ⭐
+│   │   ├── patients/     -> HUB CLÍNICO PRINCIPAL ⭐
+│   │   ├── settings/     -> Template Editor (P3)
 │   │   └── treatments/   -> Treatment management (P2)
 │   └── patient/          -> Patient portal
 │       ├── book/         -> Booking flow (3-step)
 │       └── history/      -> Appointment history
 │
 ├── components/
-│   ├── exploration/     -> DynamicForm, FieldRenderer, FacialDiagram, PhotoCapture, SkinEvaluation (legacy), TemplateEditor, FieldFormDialog
+│   ├── exploration/     -> DynamicForm, FieldRenderer, FacialDiagram, PhotoCapture, etc.
 │   ├── dashboard/       -> Sidebar, Header, widgets
 │   ├── patient-portal/  -> PatientSidebar, BookingCalendar, etc.
-│   ├── patients/        -> Patient list, detail, medical/treatment tabs
+│   ├── patients/        -> Patient list, detail, explorations-tab, clinical-notes-tab
 │   └── ui/              -> shadcn/ui primitives
 │
 ├── lib/
-│   ├── db/              -> Drizzle schema (explorations v2 + 2 new tables) + migrations (2)
+│   ├── db/              -> Drizzle schema + migrations (2)
 │   ├── auth/            -> JWT auth
-│   ├── api/             -> Validators (incl. nuevos), errors, auth-guard, helpers
+│   ├── api/             -> Validators, errors, auth-guard, helpers (incl. template lookup)
 │   └── availability/    -> Overlap detection logic
 │
 └── openspec/
     ├── config.yaml       -> SDD project config
     ├── specs/            -> Source of truth (6 main specs)
-    ├── changes/
-    │   ├── p3-1-exploration-templates/ -> Active change (proposal, 3 specs, design, tasks)
-    │   └── archive/      -> P1, P2 archived
+    └── changes/
+        ├── p3-1-exploration-templates/ -> COMPLETO (proposal, discovery, design, tasks)
+        └── archive/      -> P1, P2 archived
 ```
-
-**Nuevas tablas**:
-- `exploration_templates` — id, professionalId, name, slug, description, config (JSON), isActive, isSystem, createdAt, updatedAt
-- `clinical_notes` — id, patientId, professionalId, date, content, createdAt, updatedAt
-
-**Tablas modificadas**:
-- `explorations` — +template_id (FK), +responses (JSON). skin_evaluation/facial_analysis legacy se mantienen.
 
 ---
 
-## 6. Estado del Repositorio
+## 8. Estado del Repositorio
 
 | Indicador | Valor |
 |-----------|-------|
-| Último commit | `bbb0f58` — P3.1 PR #1 Foundation |
-| Working tree | ✅ CLEAN (PR #2 + PR #3 implementados, cambios sin commitear) |
+| Último commit | `751bfda` — Centro Clínico de Pacientes con Exploracion y Notas. |
+| Working tree | ✅ CON CAMBIOS (fix botones destructivos, archive openspec) |
 | Ahead of origin | `origin/main` en sincronía |
 | tsc | ✅ Sin errores |
 | Build | ✅ Pass (Next.js 16.2.6, Turbopack) |
 | Migraciones | 2 aplicadas (0000 + 0001_exploration_templates) |
-| Openspec | config.yaml + 6 specs + active change `p3-1-exploration-templates` + 2 archived |
-
-**Consistente para continuar PR #4.** ✅
+| Openspec | config.yaml + 6 specs + change `p3-1-exploration-templates` COMPLETO + 2 archived |
 
 ---
 
-## 7. Próxima Recomendación
+## 9. Próxima Recomendación
 
-**P3.1 — PR #4: Clinical Notes UI + API Evolution** ⏳ PENDIENTE
+P3.1A — **COMPLETO** ✅
 
-No iniciar automáticamente. Esperar instrucciones explícitas antes de comenzar Discovery de Clinical Notes.
-
-*Prerrequisitos*: PR #1 ✅, PR #2 ✅, PR #3 ✅
+Próximos pasos sugeridos:
+1. FUT-01: Multi-selección de tratamientos por paciente
+2. FUT-02: Dashboard profesional modular
+3. FUT-03: Dark Mode
+4. FUT-04: Notificaciones
+5. FUT-05: Restricción de registro solo pacientes
 
 ---
 
 ## CHECKPOINT SAVED ✅
 
-**P3.1 Resumen de sesión**:
+**P3.1A Resumen de sesión**:
 - PR #1 Foundation: ✅ COMPLETE (mergeado)
 - PR #2 Dynamic Form: ✅ COMPLETE
 - PR #3 Template Editor: ✅ COMPLETE — todos los smokes PASS
-- PR #4 Clinical Notes: ⏳ PENDIENTE — esperar instrucciones
+- **PR #4 Patient Clinical Hub: ✅ COMPLETE** — ARCH-01 aprobado, consolidación en Pacientes
 
-**4 bugs resueltos durante PR #3**: response shape, double-stringify, Zod schema, ZoneDetailForm fallback.
+**Decisión arquitectónica ARCH-01**: Opción A (Consolidar en Pacientes). Pacientes = Hub Clínico principal. ExploracionesTab read-only. Fotografías dentro de exploraciones. Historial Clínico en transición (Fase 1: banner).
 
-**Guardado en engram**: BUG-P3-01 (ZoneDetailForm fallback) y PR #3 completo.
-
-## SESSION CLOSED ✅
+**Guardado en engram**: ARCH-01 discovery, PR #4 design+tasks, implementación completa.

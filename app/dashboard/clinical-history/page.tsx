@@ -14,8 +14,9 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Stethoscope, History, Loader2, AlertCircle, FolderOpen } from "lucide-react";
+import { Stethoscope, History, Loader2, AlertCircle, FolderOpen, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 // ─── API response types ────────────────────────────────────────────────────────
 
@@ -180,20 +181,48 @@ export default function ClinicalHistoryPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex gap-6">
-      {/* ── Patient List ─────────────────────────────────────────────────── */}
-      <div className="w-96 shrink-0">
-        <PatientList
-          patients={patients}
-          selectedPatient={selectedPatient}
-          onSelectPatient={setSelectedPatient}
-          onNewPatient={() => router.push("/dashboard/patients")}
-        />
+    <div className="h-[calc(100vh-4rem)] flex flex-col">
+      {/* ── Transition banner ───────────────────────────────────────────── */}
+      <div className="shrink-0 px-6 pt-4 pb-0">
+        <div className="flex items-start gap-3 rounded-lg border border-accent/30 bg-accent/5 p-4">
+          <Info className="size-5 text-accent shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">
+              Historial Clínico se está migrando a Pacientes
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Toda la información clínica ahora está centralizada en{" "}
+              <Link
+                href="/dashboard/patients"
+                className="font-medium text-accent hover:underline"
+              >
+                Pacientes
+              </Link>
+              . Seleccioná un paciente para ver su historial completo en un solo
+              lugar.
+            </p>
+          </div>
+          <Button variant="outline" size="sm" asChild className="shrink-0">
+            <Link href="/dashboard/patients">Ir a Pacientes</Link>
+          </Button>
+        </div>
       </div>
 
-      {/* ── Clinical History Detail ──────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto">
-        {!selectedPatient ? (
+      {/* ── Main content ────────────────────────────────────────────────── */}
+      <div className="flex-1 flex gap-6 min-h-0 px-6 pb-6 pt-4">
+        {/* ── Patient List ─────────────────────────────────────────────────── */}
+        <div className="w-96 shrink-0">
+          <PatientList
+            patients={patients}
+            selectedPatient={selectedPatient}
+            onSelectPatient={setSelectedPatient}
+            onNewPatient={() => router.push("/dashboard/patients")}
+          />
+        </div>
+
+        {/* ── Clinical History Detail ──────────────────────────────────────── */}
+        <div className="flex-1 overflow-auto">
+          {!selectedPatient ? (
           /* ── Empty state ──────────────────────────────────────────────── */
           <Card className="h-full">
             <CardContent className="flex flex-col items-center justify-center h-full text-center py-16">
@@ -328,6 +357,7 @@ export default function ClinicalHistoryPage() {
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

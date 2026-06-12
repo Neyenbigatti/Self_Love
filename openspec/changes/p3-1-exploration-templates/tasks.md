@@ -197,3 +197,232 @@ Chain strategy: stacked-to-main
 - [ ] 16.7 Manual smoke: reorder fields, save, verify DynamicForm reflects new order
 - [ ] 16.8 Manual smoke: widget toggle → widget appears/disappears from DynamicForm
 - [ ] 16.9 Manual smoke: type change warning appears when switching type
+
+---
+
+# PR #4 — Patient Clinical Hub
+
+## Review Workload Forecast
+
+| Field | Value |
+|-------|-------|
+| Estimated changed lines | ~410 |
+| 400-line budget risk | Medium |
+| Chained PRs recommended | No |
+| Suggested split | Single PR |
+| Delivery strategy | ask-on-risk |
+| Chain strategy | N/A |
+
+> **Budget note**: ~410 líneas estimadas. ~10 sobre el presupuesto de 400. Si es necesario ajustar, se puede simplificar el detail de exploraciones v2 (omitir templateConfig, mostrar solo key-value básico), reduciendo ~30 líneas del API + componente.
+
+> **READ-ONLY POLICY**: El tab Exploraciones es exclusivamente de consulta. NO permite editar, crear, ni reabrir exploraciones. Toda edición/creación vive en `/dashboard/exploration`.
+
+## Work Units
+
+| Unit | Goal | Files | ~∆ | Risk |
+|------|------|-------|-----|------|
+| 1 | Helpers: `getTemplateConfigById` lookup | `lib/api/helpers.ts` | +10 | Muy bajo |
+| 2 | API: include `templateConfig` in clinical-history response | `app/api/patients/[id]/clinical-history/route.ts` | +15 | Bajo |
+| 3 | Component: ExplorationsTab (read-only, accordion, dual format, photos) | `components/patients/explorations-tab.tsx` | ~180 | Medio |
+| 4 | Component: ClinicalNotesTab (list, create, edit, delete) | `components/patients/clinical-notes-tab.tsx` | ~160 | Bajo |
+| 5 | PatientDetail: add Exploraciones + Notas Clínicas tabs | `components/patients/patient-detail.tsx` | +25 | Muy bajo |
+| 6 | Transition banner on Clinical History page | `app/dashboard/clinical-history/page.tsx` | +20 | Muy bajo |
+| | **Total** | **6 archivos** | **~410** | **Bajo-Medio** |
+
+## Dependencies
+
+- PR #1 ✅ — exploration_templates, clinical_notes schemas + APIs
+- PR #2 ✅ — DynamicForm, FieldRenderer (no se reusan en PR #4, pero validan que el modelo de datos funciona)
+- PR #3 ✅ — Template Editor (valida que templates existen y tienen config)
+- ARCH-01 ✅ — Decisión de consolidación aprobada
+
+## Phase 17: Helpers
+
+- [x] **17.1** Add `getTemplateConfigById(templateId: string): TemplateConfig | null` to `lib/api/helpers.ts`
+  - Lookup: `db.select().from(explorationTemplates).where(eq(explorationTemplates.id, templateId)).limit(1)`
+  - Return `parseJsonField(template.config)` if found, `null` otherwise
+  - Files: `lib/api/helpers.ts`
+  - Risk: Very low
+  - ~∆: 10 lines
+
+## Phase 18: API — Clinical History Enhancement
+
+- [x] **18.1** Modify `app/api/patients/[id]/clinical-history/route.ts` to include `templateConfig` for v2 explorations
+  - In the exploration mapping block (section 4), after photos mapping:
+    - `templateConfig: row.templateId ? getTemplateConfigById(row.templateId) : null`
+  - Import `getTemplateConfigById` from `lib/api/helpers`
+  - Files: `app/api/patients/[id]/clinical-history/route.ts`
+  - Risk: Low
+  - ~∆: 15 lines
+  - Verify: `npx tsc --noEmit`, GET clinical-history for a patient with v2 exploration → response includes `templateConfig`
+
+## Phase 19: Component — ExplorationsTab (READ-ONLY)
+
+- [x] **19.1** Create `components/patients/explorations-tab.tsx`
+  - **Props**: `patientId: string`
+  - **State**: `explorations: ExplorationItem[]`, `loading: boolean`, `error: string | null`
+  - **Fetch**: `GET /api/patients/[id]/clinical-history` → extract `explorations` from response
+  - **Lifecycle**: `useEffect` on mount, `useCallback` for refetch with `useReducer` or `useState`
+  - **Loading state**: Skeleton cards (3 placeholder items with pulse animation)
+  - **Empty state**: Icon + "Sin exploraciones registradas" + botón "Nueva Exploración" → `/dashboard/exploration`
+  - **Error state**: Alert icon + error message + "Reintentar" button
+
+- [x] **19.2** Exploration accordion list
+  - Use shadcn `<Accordion type="single" collapsible>` (mismo patrón que TreatmentHistoryTab)
+  - Each trigger: date (formatted) + template indicator (v2 badge or "Legacy" badge) + photo count + notes preview snippet
+  - Order: date DESC (most recent first)
+
+- [x] **19.3** Exploration detail on expand — v2 format
+  - When exploration has `templateId`, `responses`, and `templateConfig`:
+  - Render sections from `templateConfig.sections` as Cards
+  - Each section: map fields, show `field.label` + formatted value from `responses[field.key]`
+  - Skip fields not present in responses
+  - Show `facialAnalysis` in a summary card if present
+  - Show photos grid (see 19.5)
+
+- [x] **19.4** Exploration detail on expand — legacy format
+  - When exploration has no templateId:
+  - Render SkinEvaluation data as cards (skinType, skinCondition, concerns, elasticity, hydration, oilLevel, sensitivity)
+  - Render FacialAnalysis data as area cards (forehead, cheeks, etc.)
+  - Show photos grid (see 19.5)
+
+- [x] **19.5** Photos grid (shared between v2 and legacy)
+  - Show only if `photos.length > 0`
+  - Grid: `grid-cols-3 md:grid-cols-5 gap-2`
+  - Each photo: aspect-square, object-cover thumbnail
+  - Alt text: `"Foto {photo.angle}"`
+  - **No lightbox** en PR #4 (simple grid)
+
+- [x] **19.6** Navigation button
+  - Botón "Nueva Exploración Física" al final del tab
+  - `onClick → router.push(\`/dashboard/exploration?patientId=${patientId}\`)`
+  - Mismo handler que el botón existente en PatientDetail header (reutilizar prop `onNewExploration`)
+
+  - Files: `components/patients/explorations-tab.tsx`
+  - Risk: Medium (dual format display + templateConfig integration)
+  - ~∆: 180 lines (entire component)
+
+## Phase 20: Component — ClinicalNotesTab
+
+- [x] **20.1** Create `components/patients/clinical-notes-tab.tsx`
+  - **Props**: `patientId: string`
+  - **State**: `notes: ClinicalNote[]`, `loading`, `error`, `creating` (inline form visible), `editingNoteId`, `editContent`
+
+- [x] **20.2** Fetch and display notes list
+  - `useEffect` → `GET /api/patients/[id]/clinical-notes` → `notes[]`
+  - Rendered as list: each note = date header + content (whitespace-pre-wrap) + edit/delete buttons
+  - Order: date DESC
+  - Loading: skeleton cards
+  - Empty: "Sin notas clínicas registradas" + icon
+  - Error: toast + inline retry
+
+- [x] **20.3** Create note — inline editor
+  - "+ Nueva Nota" button → shows inline form below the header
+  - Form: date input (default today, ISO format YYYY-MM-DD) + Textarea (4 rows, placeholder "Escribí la nota clínica...")
+  - "Guardar" button → `POST /api/patients/[id]/clinical-notes` → refetch list → collapse form
+  - "Cancelar" button → collapse form without saving
+  - Loading state on save: button disabled with spinner
+
+- [x] **20.4** Edit note — dialog
+  - Click "Editar" → opens shadcn `<Dialog>` with Textarea precargado
+  - "Guardar" → `PATCH /api/patients/[id]/clinical-notes/${noteId}` → refetch → close
+  - "Cancelar" → close without changes
+
+- [x] **20.5** Delete note — confirmation
+  - Click "Eliminar" → `<AlertDialog>` with "¿Eliminar nota? Esta acción no se puede deshacer."
+  - "Confirmar" → `DELETE /api/patients/[id]/clinical-notes/${noteId}` → refetch
+  - "Cancelar" → close dialog
+
+  - Files: `components/patients/clinical-notes-tab.tsx`
+  - Risk: Low
+  - ~∆: 160 lines (entire component)
+
+## Phase 21: PatientDetail — Add Tabs
+
+- [x] **21.1** Import new components in `components/patients/patient-detail.tsx`
+  ```typescript
+  import { ExplorationsTab } from "./explorations-tab";
+  import { ClinicalNotesTab } from "./clinical-notes-tab";
+  ```
+
+- [x] **21.2** Add TabsTrigger entries in the TabsList (after Tratamientos)
+  ```tsx
+  <TabsTrigger value="explorations">
+    <Stethoscope className="size-4 mr-2" />
+    Exploraciones
+  </TabsTrigger>
+  <TabsTrigger value="notes">
+    <FileText className="size-4 mr-2" />
+    Notas Clínicas
+  </TabsTrigger>
+  ```
+
+- [x] **21.3** Add TabsContent entries
+  ```tsx
+  <TabsContent value="explorations" className="mt-4">
+    <ExplorationsTab
+      patientId={patient.id}
+      onNewExploration={onNewExploration}
+    />
+  </TabsContent>
+  <TabsContent value="notes" className="mt-4">
+    <ClinicalNotesTab patientId={patient.id} />
+  </TabsContent>
+  ```
+
+  - Files: `components/patients/patient-detail.tsx`
+  - Risk: Very low
+  - ~∆: +25 lines (imports + 2 triggers + 2 content)
+  - Verify: PatientDetail renders 5 tabs, navigation works, tabs show correct content
+
+## Phase 22: Transition Banner — Clinical History
+
+- [x] **22.1** Add transition banner to `app/dashboard/clinical-history/page.tsx`
+  - Import: `Link` from `next/link`, `Button` from `@/components/ui/button`, `Info` from `lucide-react`
+  - Position: after the loading/error checks, immediately before the main return
+  - Content:
+    ```tsx
+    <div className="mb-6">
+      <div className="flex items-start gap-3 rounded-lg border border-accent/30 bg-accent/5 p-4">
+        <Info className="size-5 text-accent shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground">
+            Historial Clínico se está migrando a Pacientes
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Toda la información clínica ahora está centralizada en{" "}
+            <Link href="/dashboard/patients" className="font-medium text-accent hover:underline">
+              Pacientes
+            </Link>
+            . Seleccioná un paciente para ver su historial completo en un solo lugar.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" asChild className="shrink-0">
+          <Link href="/dashboard/patients">Ir a Pacientes</Link>
+        </Button>
+      </div>
+    </div>
+    ```
+  - Files: `app/dashboard/clinical-history/page.tsx`
+  - Risk: Very low
+  - ~∆: +20 lines
+
+## Phase 23: Verify
+
+- [x] **23.1** Run `npx tsc --noEmit` — zero errors
+- [x] **23.2** Run `npm run build` — zero errors
+- [ ] **23.3** Manual smoke: navigate to patient with v2 explorations → tab loads, accordion expandible con labels correctos
+- [ ] **23.4** Manual smoke: navigate to patient with legacy explorations → tab loads, accordion expandible con skin/facial cards
+- [ ] **23.5** Manual smoke: photos visible dentro de exploración expandida
+- [ ] **23.6** Manual smoke: ClinicalNotesTab — empty state, create note, note appears in list
+- [ ] **23.7** Manual smoke: ClinicalNotesTab — edit note, content updates
+- [ ] **23.8** Manual smoke: ClinicalNotesTab — delete note, confirm, note disappears
+- [ ] **23.9** Manual smoke: banner visible en `/dashboard/clinical-history` con link a Pacientes
+- [ ] **23.10** Manual smoke: PatientDetail tiene 5 tabs navegables
+
+## Rollback Plan
+
+- **Each task**: `git checkout -- <files>` before commit, `git revert <sha>` after
+- **PR #4 rollback**: revert all commits. PatientDetail vuelve a 3 tabs, archivos nuevos quedan huérfanos (sin impacto).
+- **Zero data impact**: no schema changes, no migrations, no data transformations.
+- **Clinical History page**: revert banner → vuelve a estado anterior sin cambios.

@@ -140,7 +140,10 @@ export interface ClinicalHistoryResponse {
     date: string;
     skinEvaluation: unknown;
     facialAnalysis: unknown;
+    responses: unknown;
     notes: string | null;
+    templateId: string | null;
+    templateConfig: unknown;
     photos: ExplorationPhoto[];
   }>;
 }

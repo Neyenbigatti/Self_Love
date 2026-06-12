@@ -6,6 +6,7 @@ import {
   explorations,
   explorationPhotos,
   medicalHistories,
+  explorationTemplates,
 } from '@/lib/db/schema';
 import { eq, and, desc, inArray, sql } from 'drizzle-orm';
 import { getSession } from '@/lib/auth';
@@ -139,6 +140,24 @@ export async function GET(
       photosByExplorationId.set(photo.explorationId, list);
     }
 
+    // ── Batch fetch template configs for v2 explorations ─────────────────
+    const v2TemplateIds = [
+      ...new Set(explorationRows.map((r) => r.templateId).filter(Boolean)),
+    ] as string[];
+    const templateConfigs =
+      v2TemplateIds.length > 0
+        ? await db
+            .select()
+            .from(explorationTemplates)
+            .where(inArray(explorationTemplates.id, v2TemplateIds))
+        : [];
+    const templateConfigMap = new Map(
+      templateConfigs.map((t) => [
+        t.id,
+        (parseJsonField(t.config) as Record<string, unknown>) ?? null,
+      ]),
+    );
+
     const explorationsWithPhotos = explorationRows.map((row) => ({
       id: row.id,
       date: row.date,
@@ -146,6 +165,10 @@ export async function GET(
       facialAnalysis: parseJsonField(row.facialAnalysis),
       responses: parseJsonField(row.responses),
       notes: row.notes,
+      templateId: row.templateId,
+      templateConfig: row.templateId
+        ? templateConfigMap.get(row.templateId) ?? null
+        : null,
       photos: photosByExplorationId.get(row.id) ?? [],
     }));
 

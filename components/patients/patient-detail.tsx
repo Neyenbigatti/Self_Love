@@ -28,6 +28,8 @@ import type { Patient, TreatmentRecord } from "@/lib/types";
 import { format, differenceInYears } from "date-fns";
 import { MedicalHistoryTab } from "./medical-history-tab";
 import { TreatmentHistoryTab } from "./treatment-history-tab";
+import { ExplorationsTab } from "./explorations-tab";
+import { ClinicalNotesTab } from "./clinical-notes-tab";
 
 interface PatientDetailProps {
   patient: Patient;
@@ -126,6 +128,14 @@ export function PatientDetail({
               <History className="size-4 mr-2" />
               Tratamientos
             </TabsTrigger>
+            <TabsTrigger value="explorations">
+              <Stethoscope className="size-4 mr-2" />
+              Exploraciones
+            </TabsTrigger>
+            <TabsTrigger value="notes">
+              <FileText className="size-4 mr-2" />
+              Notas Clínicas
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-4">
@@ -208,6 +218,17 @@ export function PatientDetail({
 
           <TabsContent value="treatments" className="mt-4">
             <TreatmentHistoryTab treatments={patient.treatments || []} />
+          </TabsContent>
+
+          <TabsContent value="explorations" className="mt-4">
+            <ExplorationsTab
+              patientId={patient.id}
+              onNewExploration={onNewExploration}
+            />
+          </TabsContent>
+
+          <TabsContent value="notes" className="mt-4">
+            <ClinicalNotesTab patientId={patient.id} />
           </TabsContent>
         </Tabs>
       </CardContent>

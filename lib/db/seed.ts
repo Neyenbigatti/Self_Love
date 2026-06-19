@@ -11,7 +11,7 @@
  *   - Weekly availability schedule
  *   - Sample appointments for the current week
  */
-
+import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
 import { hashSync } from 'bcryptjs';
 import { db } from './client';

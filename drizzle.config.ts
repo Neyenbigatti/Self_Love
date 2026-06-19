@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
@@ -6,5 +7,6 @@ export default defineConfig({
   dialect: 'sqlite',
   dbCredentials: {
     url: process.env.TURSO_DB_URL ?? 'file:./data/selflove.db',
+    authToken: process.env.TURSO_AUTH_TOKEN,
   },
 });

@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils"
   
 interface LoginFormProps {
   onSwitchToRegister: () => void
+  onSwitchToForgot?: () => void
 }
   
 interface FormErrors {
@@ -18,7 +19,7 @@ interface FormErrors {
   password?: string
 }
   
-export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
+export function LoginForm({ onSwitchToRegister, onSwitchToForgot }: LoginFormProps) {
   const { login } = useAuth()
   const router = useRouter()
   const [email, setEmail] = useState("")
@@ -209,6 +210,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           </Label>
           <button
             type="button"
+            onClick={onSwitchToForgot}
             className="text-xs text-accent hover:text-accent/80 transition-colors focus-visible:outline-none focus-visible:underline"
           >
             ¿Olvidaste tu contraseña?

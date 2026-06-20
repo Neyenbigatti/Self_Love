@@ -17,6 +17,7 @@ import { hashSync } from 'bcryptjs';
 import { db } from './client';
 import {
   users,
+  verificationTokens,
   appointments,
   availability,
   treatmentTypes,
@@ -25,7 +26,7 @@ import {
   medicalHistories,
   explorationTemplates,
 } from './schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import {
   addDays,
   startOfWeek,
@@ -221,7 +222,31 @@ async function seed() {
     title: 'Técnica Cosmetóloga',
     clinicName: 'SelfLove Clinic',
   });
-  console.log('  ✅ Professional created');
+  // ── Pre-verify professional email (idempotent) ─────────────────────────
+  const [existingToken] = await db
+    .select({ id: verificationTokens.id })
+    .from(verificationTokens)
+    .where(
+      and(
+        eq(verificationTokens.userId, PROFESSIONAL_ID),
+        eq(verificationTokens.type, 'email_verification'),
+      ),
+    )
+    .limit(1);
+
+  if (!existingToken) {
+    await db.insert(verificationTokens).values({
+      id: randomUUID(),
+      userId: PROFESSIONAL_ID,
+      type: 'email_verification',
+      token: 'seed-pre-verified-professional',
+      expiresAt: '2099-12-31T23:59:59.000Z',
+      usedAt: new Date().toISOString(),
+    });
+    console.log('  ✅ Professional email pre-verified');
+  } else {
+    console.log('  ℹ️  Professional already pre-verified, skipping');
+  }
 
   // ── Patients ────────────────────────────────────────────────────────────
   const patientData = [

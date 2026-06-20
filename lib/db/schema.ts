@@ -229,5 +229,24 @@ export const medicalHistories = sqliteTable('medical_histories', {
     .default(sql`(datetime('now'))`),
 });
 
+// ─── Verification Tokens ────────────────────────────────────────────────────────
+
+export const verificationTokens = sqliteTable('verification_tokens', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
+  type: text('type', { enum: ['email_verification', 'password_reset'] }).notNull(),
+  token: text('token').notNull().unique(),
+  expiresAt: text('expires_at').notNull(),
+  usedAt: text('used_at'),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`(datetime('now'))`),
+});
+
+export type VerificationToken = typeof verificationTokens.$inferSelect;
+export type NewVerificationToken = typeof verificationTokens.$inferInsert;
+
 export type MedicalHistory = typeof medicalHistories.$inferSelect;
 export type NewMedicalHistory = typeof medicalHistories.$inferInsert;

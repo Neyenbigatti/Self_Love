@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { users } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { users, verificationTokens } from '@/lib/db/schema';
+import { eq, and, sql } from 'drizzle-orm';
 import { verifyPassword, createToken, sessionCookieOptions } from '@/lib/auth';
 
 export async function POST(request: Request) {
@@ -11,11 +11,11 @@ export async function POST(request: Request) {
 
     // ── Validation ──────────────────────────────────────────────────────
     if (!email?.trim()) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+      return NextResponse.json({ error: 'El email es obligatorio' }, { status: 400 });
     }
     if (!password) {
       return NextResponse.json(
-        { error: 'Password is required' },
+        { error: 'La contraseña es obligatoria' },
         { status: 400 },
       );
     }
@@ -27,10 +27,34 @@ export async function POST(request: Request) {
       .where(eq(users.email, email.trim().toLowerCase()))
       .limit(1);
 
+    // Same message for non-existent user or wrong password (anti-enumeration)
     if (!user || !verifyPassword(password, user.passwordHash)) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: 'Credenciales inválidas' },
         { status: 401 },
+      );
+    }
+
+    // ── Check email verified ────────────────────────────────────────────
+    const [verified] = await db
+      .select({ id: verificationTokens.id })
+      .from(verificationTokens)
+      .where(
+        and(
+          eq(verificationTokens.userId, user.id),
+          eq(verificationTokens.type, 'email_verification'),
+          sql`${verificationTokens.usedAt} IS NOT NULL`,
+        ),
+      )
+      .limit(1);
+
+    if (!verified) {
+      return NextResponse.json(
+        {
+          error: 'Verificá tu email antes de iniciar sesión',
+          email: user.email,
+        },
+        { status: 403 },
       );
     }
 
@@ -56,7 +80,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Error interno del servidor' },
       { status: 500 },
     );
   }

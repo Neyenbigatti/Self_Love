@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils"
 
 export function AuthCard() {
   const [mode, setMode] = useState<"login" | "register">("login")
-  const [userType, setUserType] = useState<"patient" | "professional">("patient")
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -69,11 +68,7 @@ export function AuthCard() {
           {mode === "login" ? (
             <LoginForm onSwitchToRegister={() => setMode("register")} />
           ) : (
-            <RegisterForm
-              userType={userType}
-              onUserTypeChange={setUserType}
-              onSwitchToLogin={() => setMode("login")}
-            />
+            <RegisterForm onSwitchToLogin={() => setMode("login")} />
           )}
         </div>
       </div>

@@ -22,21 +22,24 @@ export interface AuthUser {
   clinicName?: string | null;
 }
 
-interface RegisterData {
-  name: string;
-  email: string;
-  password: string;
-  phone?: string;
-  role: 'patient' | 'professional';
-  title?: string;
-  clinicName?: string;
+/** Enhanced auth error preserving API response details for UI handling */
+export class AuthError extends Error {
+  status: number;
+  email?: string;
+
+  constructor(message: string, status: number, email?: string) {
+    super(message);
+    this.name = 'AuthError';
+    this.status = status;
+    this.email = email;
+  }
 }
 
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<AuthUser>;
-  register: (data: RegisterData) => Promise<AuthUser>;
+  register: (data: { name: string; email: string; password: string; phone?: string }) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -72,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Login failed');
+        throw new AuthError(data.error || 'Error al iniciar sesión', res.status, data.email);
       }
 
       setUser(data.user);
@@ -82,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const register = useCallback(
-    async (data: RegisterData): Promise<AuthUser> => {
+    async (data: { name: string; email: string; password: string; phone?: string }): Promise<void> => {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -95,8 +98,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(json.error || 'Registration failed');
       }
 
-      setUser(json.user);
-      return json.user;
+      // Registration does NOT return a user or set a session
+      // User must verify their email before logging in
     },
     [],
   );

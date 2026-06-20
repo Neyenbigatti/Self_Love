@@ -1,33 +1,37 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 import { db } from '@/lib/db';
-import { users } from '@/lib/db/schema';
+import { users, verificationTokens } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { hashPassword, createToken, sessionCookieOptions } from '@/lib/auth';
+import { hashPassword } from '@/lib/auth';
+import { generateToken } from '@/lib/auth/tokens';
+import { sendVerificationEmail } from '@/lib/email/verification';
+import { env } from '@/lib/env';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, password, phone, role, title, clinicName } = body;
+    // Only extract fields we accept — role, title, clinicName are intentionally ignored
+    const { name, email, password, phone } = body;
 
     // ── Validation ──────────────────────────────────────────────────────
     if (!name?.trim()) {
-      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+      return NextResponse.json({ error: 'El nombre es obligatorio' }, { status: 400 });
     }
     if (!email?.trim()) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+      return NextResponse.json({ error: 'El email es obligatorio' }, { status: 400 });
     }
     if (!password || password.length < 6) {
       return NextResponse.json(
-        { error: 'Password must be at least 6 characters' },
+        { error: 'La contraseña debe tener al menos 6 caracteres' },
         { status: 400 },
       );
     }
-    if (!['patient', 'professional'].includes(role)) {
-      return NextResponse.json(
-        { error: 'Role must be patient or professional' },
-        { status: 400 },
-      );
+
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return NextResponse.json({ error: 'Formato de email inválido' }, { status: 400 });
     }
 
     // ── Duplicate check ─────────────────────────────────────────────────
@@ -39,12 +43,12 @@ export async function POST(request: Request) {
 
     if (existing) {
       return NextResponse.json(
-        { error: 'An account with this email already exists' },
+        { error: 'El email ya está registrado' },
         { status: 409 },
       );
     }
 
-    // ── Create user ─────────────────────────────────────────────────────
+    // ── Create user (role forced to patient) ─────────────────────────────
     const userId = randomUUID();
     const passwordHash = hashPassword(password);
 
@@ -54,34 +58,36 @@ export async function POST(request: Request) {
       passwordHash,
       name: name.trim(),
       phone: phone?.trim() || null,
-      role,
-      title: title?.trim() || null,
-      clinicName: clinicName?.trim() || null,
+      role: 'patient',
+      // title and clinicName are NOT set — always null for patient registration
     });
 
-    // ── Create session ──────────────────────────────────────────────────
-    const token = await createToken({ sub: userId, role });
+    // ── Generate verification token ──────────────────────────────────────
+    const { raw, hash } = generateToken();
+    const expiresAt = new Date(
+      Date.now() + env.VERIFICATION_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000,
+    ).toISOString();
 
-    const response = NextResponse.json({
-      user: {
-        id: userId,
-        email: email.trim().toLowerCase(),
-        name: name.trim(),
-        role,
-        phone: phone?.trim() || null,
-        title: title?.trim() || null,
-        clinicName: clinicName?.trim() || null,
-        avatar: null,
-      },
+    await db.insert(verificationTokens).values({
+      id: randomUUID(),
+      userId,
+      type: 'email_verification',
+      token: hash,
+      expiresAt,
     });
 
-    response.cookies.set('session', token, sessionCookieOptions());
+    // ── Send verification email (non-blocking — log errors, don't crash) ─
+    sendVerificationEmail(email.trim().toLowerCase(), name.trim(), raw);
 
-    return response;
+    // ── Return 201 — NO JWT cookie set ──────────────────────────────────
+    return NextResponse.json(
+      { message: 'Revisá tu email — te enviamos un link de verificación' },
+      { status: 201 },
+    );
   } catch (error) {
     console.error('Register error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Error interno del servidor' },
       { status: 500 },
     );
   }

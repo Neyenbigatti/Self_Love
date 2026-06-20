@@ -1,12 +1,9 @@
 import { jwtVerify } from 'jose';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { env } from '@/lib/env';
 
-const JWT_SECRET_ENV = process.env.JWT_SECRET;
-if (!JWT_SECRET_ENV) {
-  throw new Error('JWT_SECRET environment variable is not set');
-}
-const JWT_SECRET = new TextEncoder().encode(JWT_SECRET_ENV);
+const JWT_SECRET = new TextEncoder().encode(env.JWT_SECRET);
 
 async function verifyToken(
   token: string,
@@ -24,7 +21,7 @@ export async function middleware(request: NextRequest) {
   const payload = token ? await verifyToken(token) : null;
   const { pathname } = request.nextUrl;
 
-  // Allow auth API routes (login, register, logout, me)
+  // Allow auth API routes (login, register, logout, me, verify-email, resend-verification)
   if (pathname.startsWith('/api/auth')) {
     return NextResponse.next();
   }

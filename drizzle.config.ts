@@ -7,6 +7,7 @@ export default defineConfig({
   dialect: 'sqlite',
   dbCredentials: {
     url: process.env.TURSO_DB_URL ?? 'file:./data/selflove.db',
+    // @ts-expect-error — authToken is needed for Turso
     authToken: process.env.TURSO_AUTH_TOKEN,
   },
 });

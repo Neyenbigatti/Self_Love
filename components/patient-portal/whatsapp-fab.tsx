@@ -5,7 +5,7 @@ interface WhatsAppFabProps {
   message?: string;
 }
 
-const DEFAULT_PHONE = "+5493417486861"; // Número de contacto SelfLove  
+const DEFAULT_PHONE = "+5492473468672"; // Número de contacto SelfLove  
 const DEFAULT_MESSAGE = "Hola! Me gustaría realizar una consulta fuera de los tratamientos que se muestran en tu aplicación :) ";
 
 export function WhatsAppFab({
@@ -15,7 +15,7 @@ export function WhatsAppFab({
   const href = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[var(--z-fab)] group">
+    <div className="fixed bottom-6 right-6 z-50 group">
       <a
         href={href}
         target="_blank"

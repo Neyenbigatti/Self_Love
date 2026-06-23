@@ -43,12 +43,12 @@ Chain strategy: pending
 
 - [x] 6.1 `npx tsc --noEmit` — zero errors
 - [x] 6.2 `npm run build` — zero errors
-- [ ] 6.3 Manual: forgot-password with existing email → 200
-- [ ] 6.4 Manual: forgot-password with non-existing email → 200 (same message, no email sent)
-- [ ] 6.5 Manual: reset with valid token → 200 + password changed + login works
-- [ ] 6.6 Manual: reset with invalid token → 404
-- [ ] 6.7 Manual: reset with expired token → 410
-- [ ] 6.8 Manual: reset with used token → 410
-- [ ] 6.9 Manual: reset with short password → 400
-- [ ] 6.10 Manual: login with new password → 200 + JWT
-- [ ] 6.11 Manual: login with old password → 401
+- [x] 6.3 Manual: forgot-password with existing email → 200
+- [x] 6.4 Manual: forgot-password with non-existing email → 200 (same message, no email sent)
+- [x] 6.5 Manual: reset with valid token → 200 + password changed + login works
+- [x] 6.6 Manual: reset with invalid token → 404
+- [x] 6.7 Manual: reset with expired token → 410
+- [x] 6.8 Manual: reset with used token → 410
+- [x] 6.9 Manual: reset with short password → 400
+- [x] 6.10 Manual: login with new password → 200 + JWT
+- [x] 6.11 Manual: login with old password → 401

@@ -1,12 +1,14 @@
 # SelfLove — Checkpoint Final
 
-**Fecha**: 2026-06-12
-**Último commit**: `751bfda` — Centro Clínico de Pacientes con Exploracion y Notas.
-**Working tree**: ✅ CON CAMBIOS (fix botones destructivos, archive openspec)
+**Fecha**: 2026-06-20
+**Último commit**: `8aa905c` — Users - Password Recovery implement
+**Working tree**: ✅ CON CAMBIOS (archive-report, verify-report, tasks marcados)
 **tsc**: OK ✅
 **Build**: OK ✅
-**Migrations**: 2 (0000 + 0001_exploration_templates) ✅
+**Migrations**: 2 (0000 + 0001_add_verification_tokens) ✅
 **P3.1A — Patient Clinical Hub**: ✅ COMPLETO — mergeado a main
+**PR #5 — Auth Hardening**: ✅ COMPLETO — mergeado a main
+**PR #6 — Password Recovery**: ✅ COMPLETO — mergeado a main
 
 ---
 
@@ -46,6 +48,8 @@
 | ClinicalNotesTab (CRUD: crear, editar, eliminar) | P3.1A — Hub | `p3-1-exploration-templates` | ✅ COMPLETE |
 | Transición de Historial Clínico (banner informativo) | P3.1A — Hub | `p3-1-exploration-templates` | ✅ COMPLETE |
 | templateConfig en clinical-history API (batch lookup) | P3.1A — Hub | `p3-1-exploration-templates` | ✅ COMPLETE |
+| Auth Hardening (email verification bloqueante, verification_tokens) | Core | `pr5-auth-hardening` | ✅ ARCHIVED |
+| Password Recovery (forgot + reset, email, UI) | Core | `pr6-password-recovery` | ✅ ARCHIVED |
 
 ---
 
@@ -121,6 +125,8 @@ Paciente (Hub Clínico principal)
 | **PR #2** | Dynamic Form Renderer + Exploration API v2 | ✅ **COMPLETE** — mergeado a main |
 | **PR #3** | Admin UI: Template Field Editor (Configuración) | ✅ **COMPLETE** — mergeado a main |
 | **PR #4** | Patient Clinical Hub — consolidación en Pacientes | ✅ **COMPLETE** — mergeado a main |
+| **PR #5** | Auth Hardening — email verification bloqueante, verification_tokens, resend | ✅ **COMPLETE** — mergeado a main |
+| **PR #6** | Password Recovery — forgot/reset endpoints, email, UI, auth-card modos | ✅ **COMPLETE** — mergeado a main |
 
    **→ UX-04 FIXED ✅** — `--destructive-foreground` corregido (era idéntico a `--destructive`)
 
@@ -156,7 +162,7 @@ Paciente (Hub Clínico principal)
 selflove/
 ├── app/
 │   ├── api/
-│   │   ├── auth/ -> login, logout, register, me
+│   │   ├── auth/ -> login, logout, register, me, verify-email, resend-verification, forgot-password, reset-password
 │   │   ├── appointments/ -> CRUD appointments
 │   │   ├── availability/ -> CRUD availability + slots generation
 │   │   ├── exploration-templates/ -> GET list, GET by slug, PUT update
@@ -202,26 +208,30 @@ selflove/
 
 | Indicador | Valor |
 |-----------|-------|
-| Último commit | `751bfda` — Centro Clínico de Pacientes con Exploracion y Notas. |
-| Working tree | ✅ CON CAMBIOS (fix botones destructivos, archive openspec) |
+| Último commit | `8aa905c` — Users - Password Recovery implement |
+| Working tree | ✅ CON CAMBIOS (archive-report, verify-report, tasks finalizados) |
 | Ahead of origin | `origin/main` en sincronía |
 | tsc | ✅ Sin errores |
 | Build | ✅ Pass (Next.js 16.2.6, Turbopack) |
-| Migraciones | 2 aplicadas (0000 + 0001_exploration_templates) |
-| Openspec | config.yaml + 6 specs + change `p3-1-exploration-templates` COMPLETO + 2 archived |
+| Migraciones | 2 aplicadas (0000 + 0001_add_verification_tokens) |
+| Openspec | config.yaml + spec + changes: `pr5-auth-hardening` ✅ ARCHIVED, `pr6-password-recovery` ✅ ARCHIVED |
 
 ---
 
 ## 9. Próxima Recomendación
 
 P3.1A — **COMPLETO** ✅
+PR #5 — Auth Hardening **COMPLETO** ✅
+PR #6 — Password Recovery **COMPLETO** ✅
 
 Próximos pasos sugeridos:
-1. FUT-01: Multi-selección de tratamientos por paciente
-2. FUT-02: Dashboard profesional modular
-3. FUT-03: Dark Mode
-4. FUT-04: Notificaciones
-5. FUT-05: Restricción de registro solo pacientes
+1. UX-07: Mensaje de error "patientId must match your session" poco amigable
+2. UX-08: Dashboard Profesional Modular (altura fija, scroll interno, ocultar módulos)
+3. UX-05: Error 409 cierra diálogo de borrado antes de mostrar mensaje
+4. UX-01/02: Nombre/precio del tratamiento en booking
+5. FUT-01: Multi-selección de tratamientos por paciente
+6. FUT-02: Dashboard profesional modular
+7. FUT-03: Dark Mode
 
 ---
 
@@ -233,6 +243,18 @@ Próximos pasos sugeridos:
 - PR #3 Template Editor: ✅ COMPLETE — todos los smokes PASS
 - **PR #4 Patient Clinical Hub: ✅ COMPLETE** — ARCH-01 aprobado, consolidación en Pacientes
 
-**Decisión arquitectónica ARCH-01**: Opción A (Consolidar en Pacientes). Pacientes = Hub Clínico principal. ExploracionesTab read-only. Fotografías dentro de exploraciones. Historial Clínico en transición (Fase 1: banner).
+**PR #5 — Auth Hardening**:
+- Email verification bloqueante (register sin JWT, login bloqueado hasta verificar)
+- verification_tokens table (SHA-256 hashed, email_verification + password_reset types)
+- Resend verification (60s cooldown, invalidación de tokens previos, anti-enumeration)
+- UI: verificación requerida en register + login 403
+- Seed idempotente (professional pre-verificado)
 
-**Guardado en engram**: ARCH-01 discovery, PR #4 design+tasks, implementación completa.
+**PR #6 — Password Recovery**:
+- Forgot-password + reset-password endpoints con anti-enumeration
+- Reutilización de verification_tokens (type=password_reset, 1h expiry)
+- Email template + sender via Resend
+- UI: forgot/reset forms + auth-card modos + login-form wiring
+- UX polish: success screen con email, spam hint, "Enviar otro enlace"
+
+**Guardado en engram**: ARCH-01 discovery, PR #4/5/6 design+tasks, implementación completa.

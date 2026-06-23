@@ -76,8 +76,8 @@ export async function POST(request: Request) {
       expiresAt,
     });
 
-    // ── Send verification email (non-blocking — log errors, don't crash) ─
-    sendVerificationEmail(email.trim().toLowerCase(), name.trim(), raw);
+    // ── Send verification email ──────────────────────────────────────────
+    await sendVerificationEmail(email.trim().toLowerCase(), name.trim(), raw);
 
     // ── Return 201 — NO JWT cookie set ──────────────────────────────────
     return NextResponse.json(

@@ -58,8 +58,8 @@ export async function POST(request: Request) {
       expiresAt,
     });
 
-    // ── Send email (non-blocking — log errors, don't crash) ──────────────
-    sendPasswordResetEmail(user.email, raw, user.name);
+    // ── Send email ───────────────────────────────────────────────────────
+    await sendPasswordResetEmail(user.email, raw, user.name);
 
     return NextResponse.json({
       message: 'Si el email está registrado, recibirás un enlace',

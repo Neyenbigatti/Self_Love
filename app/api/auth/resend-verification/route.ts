@@ -89,8 +89,8 @@ export async function POST(request: Request) {
       expiresAt,
     });
 
-    // ── Send email (non-blocking) ────────────────────────────────────────
-    sendVerificationEmail(normalizedEmail, user.name, raw);
+    // ── Send email ────────────────────────────────────────────────────────
+    await sendVerificationEmail(normalizedEmail, user.name, raw);
 
     return NextResponse.json({ message: 'Email reenviado' });
   } catch (error) {

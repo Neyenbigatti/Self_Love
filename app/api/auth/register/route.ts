@@ -77,7 +77,23 @@ export async function POST(request: Request) {
     });
 
     // ── Send verification email ──────────────────────────────────────────
-    await sendVerificationEmail(email.trim().toLowerCase(), name.trim(), raw);
+    const emailResult = await sendVerificationEmail(
+      email.trim().toLowerCase(),
+      name.trim(),
+      raw,
+    );
+
+    if (!emailResult.success) {
+      // ═══ DEBUG INSTRUMENTATION ═════════════════════════════════════════
+      // Log the failure with enough context to diagnose Resend in production.
+      console.error('[Register:DEBUG] sendVerificationEmail FAILED', {
+        email: email.trim().toLowerCase(),
+        userId,
+        endpoint: 'POST /api/auth/register',
+        errorMessage: emailResult.error,
+      });
+      // ═══════════════════════════════════════════════════════════════════
+    }
 
     // ── Return 201 — NO JWT cookie set ──────────────────────────────────
     return NextResponse.json(

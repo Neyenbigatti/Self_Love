@@ -90,7 +90,18 @@ export async function POST(request: Request) {
     });
 
     // ── Send email ────────────────────────────────────────────────────────
-    await sendVerificationEmail(normalizedEmail, user.name, raw);
+    const emailResult = await sendVerificationEmail(normalizedEmail, user.name, raw);
+
+    if (!emailResult.success) {
+      // ═══ DEBUG INSTRUMENTATION ═════════════════════════════════════════
+      console.error('[ResendVerification:DEBUG] sendVerificationEmail FAILED', {
+        email: normalizedEmail,
+        userId: user.id,
+        endpoint: 'POST /api/auth/resend-verification',
+        errorMessage: emailResult.error,
+      });
+      // ═══════════════════════════════════════════════════════════════════
+    }
 
     return NextResponse.json({ message: 'Email reenviado' });
   } catch (error) {

@@ -59,7 +59,18 @@ export async function POST(request: Request) {
     });
 
     // ── Send email ───────────────────────────────────────────────────────
-    await sendPasswordResetEmail(user.email, raw, user.name);
+    const emailResult = await sendPasswordResetEmail(user.email, raw, user.name);
+
+    if (!emailResult.success) {
+      // ═══ DEBUG INSTRUMENTATION ═════════════════════════════════════════
+      console.error('[ForgotPassword:DEBUG] sendPasswordResetEmail FAILED', {
+        email: user.email,
+        userId: user.id,
+        endpoint: 'POST /api/auth/forgot-password',
+        errorMessage: emailResult.error,
+      });
+      // ═══════════════════════════════════════════════════════════════════
+    }
 
     return NextResponse.json({
       message: 'Si el email está registrado, recibirás un enlace',
